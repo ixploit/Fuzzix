@@ -9,7 +9,7 @@ settings = None
 
 
 class URL_Fuzzer:
-    """class to perform the spidering and fuzzing tasks"""
+    """class to perform spidering and fuzzing tasks"""
 
     def __init__(self,host):
         if type(host) is Host:
