@@ -29,7 +29,7 @@ class URL_Fuzzer:
 
 def startup():
     """
-    return:
+    return: attribute of class Settings containing all startup options
     """
 
     global settings
