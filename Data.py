@@ -137,12 +137,13 @@ class URL:
     """stores some general information about the used URL"""
 
     GOOD_STATUS=[200,203,302,304,401,402,403,405,407,500,502,503]
+    urlRegex = r"(http[s]?)://((?:[a-zA-Z]|[0-9]|[$\-_\.&+])+)((?:[a-zA-Z]|[0-9]|[$\-_\.\/&+])*)(?::((?:[0-9]){1,5})){0,1}"
+
     def __init__(self, url):
-       urlRegex = r"(http[s]?)://((?:[a-zA-Z]|[0-9]|[$\-_\.&+])+)((?:[a-zA-Z]|[0-9]|[$\-_\.\/&+])*)(?::((?:[0-9]){1,5})){0,1}"
-       if re.match(urlRegex,url):
+       if re.match(URL.urlRegex,url):
            #url is valid -> parsing
            
-          matches = re.findall(urlRegex,url)[0]
+          matches = re.findall(URL.urlRegex,url)[0]
           self.proto = matches[0]
 
           if self.proto.lower() == HTTP.getName().lower():
@@ -201,6 +202,9 @@ class URL:
         attribute url: a str containing the URL wich is supposed to be prettified
         return: the prettified URL as URL
         """
+        if re.match(URL.urlRegex,url):
+            return URL(url)
+
         if url.startswith('//'):
             url = url.replace('//',host.getURL().getProto() +"://",1)
 
