@@ -1,7 +1,7 @@
 import argparse
 
 from util import logger
-from Data import Host, Dir, File, NONE_FILE
+from Data import Host, Dir, File, URL, NONE_FILE
 from Data import Settings
 from util import WebApi
 
@@ -22,8 +22,16 @@ class URL_Fuzzer:
     def spider(self):
         logger.info("Spidering URL",self.host.getURL())
         status,content = WebApi.receiveContent(self.host,self.host.getRootdir(),NONE_FILE)
-        WebApi.grabRefs(content)
-
+        refs = WebApi.grabRefs(content)
+        for ref in refs:
+            try:
+                url = URL.prettifyURL(self.host,ref)
+                path = url.getPath()
+                self.host.getRootdir().appendPath(path,0)
+            except ValueError as e:
+                logger.error(e)
+                pass
+        self.host.getRootdir().printDirs()
     def fuzz(self):
         logger.info("fuzzing URL",self.host.getURL())
 

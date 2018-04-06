@@ -45,25 +45,29 @@ class __WebApi__:
 
     def grabRefs(self,content):
         """
+        extracts most hyperlinks out of a given html document
         attribute content: a str encoded html document
-        return: returns the extracted links
+        return: returns the extracted links as a list
         """
         results=[]
         page = BeautifulSoup(content, 'html.parser')
 
         #divide in tags
         tags = page.find_all()
+
         #scanning src attribute
         for tag in tags:
             link = tag.get('src')
             if link is not None:
-                print(link)
+                results.append(link)
 
         #scanning href attribute
         for tag in tags:
             link = tag.get('href')
             if link is not None:
-                print(link)
+                results.append(link)
+
+        return results
 
 
 WebApi = __WebApi__('HTTP')
