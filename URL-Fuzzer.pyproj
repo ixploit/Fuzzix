@@ -13,7 +13,7 @@
     <RootNamespace>URL-Fuzzer</RootNamespace>
     <InterpreterId>MSBuild|URL-Fuzzer|$(MSBuildProjectFullPath)</InterpreterId>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>url https://gymnasium-neuruppin.de -s -f -t 6</CommandLineArguments>
+    <CommandLineArguments>url https://cybertschunk.net -s -f -t 64</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>

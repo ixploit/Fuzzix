@@ -159,7 +159,7 @@ class URL:
 
        else:
            #url is invalid
-           raise ValueError("the given url " + url + " is not valid")
+           raise ValueError("the given url " + url + " is not valid!")
 
     def getURL(self):
         return URL.buildURL(self.getProto(),self.getHost(),self.getPort(),self.getPath(),"")
@@ -193,17 +193,24 @@ class URL:
         return proto + "://" + host + ("/" + dir + "/" + file + ":" + str(port) if len((dir+file).replace('/',''))>0 else ":" +str(port) )   
     
     @staticmethod
-    def prettifyURL(host,url):
+    def prettifyURL(host,rootURL,url):
         """
         prettifies a given url
         attribute host: an instance of the root host
+        attribute rootURL: the url of the file, where the given url has been discoverd as URL
         attribute url: a str containing the URL wich is supposed to be prettified
         return: the prettified URL as URL
         """
         if url.startswith('//'):
             url = url.replace('//',host.getURL().getProto() +"://",1)
-        return URL(url)
 
+        relativeURLRegex=r"([\/|\.\/|\.\.\/]*)\b([-a-zA-Z0-9@:%_\+.~#&//=]*)(?:[\/|.])([-a-zA-Z0-9@:%_\+.~#&//=]*)\?{0,1}(?:[-a-zA-Z0-9@:%_\+.~#&//=]*)"
+        if re.match(relativeURLRegex,url):
+            url = URL.buildURL(rootURL.getProto(),rootURL.getHost(),rootURL.getPort(),rootURL.getPath()+url,"")
+        try:
+            return URL(url)
+        except ValueError as e:
+            raise ValueError('couldn\'t prettify URL',url,' it is not valid')
 class Host:
 
     """represents a webhost"""

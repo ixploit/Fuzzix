@@ -24,17 +24,18 @@ class URL_Fuzzer:
         rootcontent=Content(self.host.getURL())
         Content_Worker.queue.put(rootcontent)
         for i in range(0,settings.getRecursion()):
-            logger.info('Processing recursion',i)
+            logger.info('Processing recursion',i,Content_Worker.queue.qsize(),'tasks to be done')
             Content_Worker.queue.join()
 
             while not Content_Worker.done.empty():
                 content = Content_Worker.done.get()
+                Content_Worker.done.task_done()
                 if content.getStatus() in URL.GOOD_STATUS:
                     refs = WebApi.grabRefs(content.getContent())
                     rootURL=content.getURL()
                     for ref in refs:
                         try:
-                            url = URL.prettifyURL(self.host,ref)
+                            url = URL.prettifyURL(self.host,rootURL,ref)
                             if self.host.isExternal(url):
                                 continue
                             newContent = Content(url)
@@ -45,8 +46,7 @@ class URL_Fuzzer:
                             self.host.getRootdir().appendPath(path,length)
                             Content_Worker.queue.put(newContent)
                         except ValueError as e:
-                            logger.error(e)
-                            pass
+                            continue
 
         self.host.getRootdir().printDirs()
         logger.info("spidering completed")
