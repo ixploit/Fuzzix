@@ -136,6 +136,7 @@ import re
 class URL:
     """stores some general information about the used URL"""
 
+    GOOD_STATUS=[200,203,302,304,401,402,403,405,407,500,502,503]
     def __init__(self, url):
        urlRegex = r"(http[s]?)://((?:[a-zA-Z]|[0-9]|[$\-_\.&+])+)((?:[a-zA-Z]|[0-9]|[$\-_\.\/&+])*)(?::((?:[0-9]){1,5})){0,1}"
        if re.match(urlRegex,url):
@@ -223,14 +224,13 @@ class Host:
     def getRootdir(self):
         return self.rootDir
 
-    def isExternal(self,urlstr):
+    def isExternal(self,url):
         """
         checks weither a given url is referencing an external host
-        attribute url: the url to check as str
+        attribute url: the url to check as URL
         return: True if the url is pointing on an external host, otherwise False
         """
         try:
-            url = URL(urlstr)
             if self.getURL().getHost() == url.getHost():
                 return False
             else:
@@ -241,7 +241,7 @@ class Host:
 
 class Settings:
 
-    def __init__(self, spider, fuzz, url, verifyCert ):
+    def __init__(self, spider, fuzz, url, verifyCert, threads, recursion ):
         if type(spider) is not bool:
             raise ValueError("attribute spider must be of type bool")
         if type(fuzz) is not bool:
@@ -250,7 +250,11 @@ class Settings:
             raise ValueError("attribute url must be of type str")
         if type(verifyCert) is not bool:
             raise ValueError("attribute verifyCert must be of type bool")
-        
+        if type(threads) is not int:
+            raise ValueError("attribute threads must be of type int")
+        if type(recursion) is not int:
+            raise ValueError("attribute recursion must be of type int")
+
         try:
             self.url = URL(url)
         except ValueError as e:
@@ -258,6 +262,8 @@ class Settings:
         self.spider = spider
         self.fuzz = fuzz
         self.verifyCert = verifyCert
+        self.threads = threads
+        self.recursion = recursion
 
     def getSpider(self):
         return self.spider
@@ -270,6 +276,12 @@ class Settings:
 
     def getVerifyCert(self):
         return self.verifyCert
+
+    def getThreads(self):
+        return self.threads
+
+    def getRecursion(self):
+        return self.recursion
 
     """warning, not yet supported!"""
     def getRootDir(self):

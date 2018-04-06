@@ -1,5 +1,10 @@
 import urllib3
 urllib3.disable_warnings()
+
+
+
+import threading
+from queue import Queue
 import re
 from coloredlogger import ColoredLogger
 from bs4 import BeautifulSoup
@@ -42,6 +47,12 @@ class __WebApi__:
         
         return r.status, str(BeautifulSoup(r.data, 'html.parser'))
 
+    def receiveURL(self,url):
+        if type(url) is not URL:
+            raise ValueError('unsopportd type for attribute url')
+    
+        r = self.poolManager.request('GET',url.getURL())
+        return r.status, str(BeautifulSoup(r.data,'html.parser'))
 
     def grabRefs(self,content):
         """
@@ -71,3 +82,54 @@ class __WebApi__:
 
 
 WebApi = __WebApi__('HTTP')
+
+class Content:
+    """a class to represent content on a remote host"""
+
+    def __init__(self,url):
+        if type(url) is not URL:
+            raise ValueError("invalid type for attribute url")
+
+        self.url = url
+        self.size = 0
+        self.content=""
+        self.status = 0
+
+    def getURL(self):
+        return self.url
+
+    def getSize(self):
+        return len(self.getContent())
+
+    def getContent(self):
+        return self.content
+
+    def getStatus(self):
+        return self.status
+
+    def setStatus(self,status):
+        self.status = status
+
+    def setContent(self,content):
+        self.content = content
+
+class Content_Worker (threading.Thread):
+    queue=Queue(maxsize=0)
+    done=Queue(maxsize=0)
+    workers=[]
+
+    def __init__(self):
+        return super().__init__()
+
+    def run(self):
+        while True:
+            content = Content_Worker.queue.get()
+            try:
+                status,htmlContent=WebApi.receiveURL(content.getURL())
+                content.setContent(htmlContent)
+                content.setStatus(status)
+                Content_Worker.done.put(content)
+            except:
+                pass
+            Content_Worker.queue.task_done()
+
