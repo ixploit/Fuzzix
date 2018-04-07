@@ -20,6 +20,11 @@ class URL_Fuzzer:
         logger.info("fuzzing url",self.host.getURL())
 
     def spider(self):
+        """
+        spider-routine of the URL_Fuzzer
+        return: None
+        """
+
         logger.info("Spidering URL",self.host.getURL())
         rootcontent=Content(self.host.getURL())
         Content_Worker.queue.put(rootcontent)
@@ -55,6 +60,7 @@ class URL_Fuzzer:
 
 def startup():
     """
+    initializes the program
     return: attribute of class Settings containing all startup options
     """
 
@@ -97,6 +103,12 @@ def startup():
         raise e
 
 def startWorkers(amount=4):
+    """
+    starts the workers
+    attribute amount: the amount of workers to start
+    return: None
+    """
+
     logger.info("Starting " + str(amount) + " threads")
     for i in range(0,amount):
         c = Content_Worker()
@@ -105,6 +117,11 @@ def startWorkers(amount=4):
     logger.info("Threads started")
 
 def stopWorkers():
+    """
+    stops the running workers
+    return: None
+    """
+
     logger.info("stopping workers")
     for w in Content_Worker.workers:
         Content_Worker.queue.put(TERMINATE_WORKER)
@@ -114,6 +131,11 @@ def stopWorkers():
     logger.info("stopped workers")
 
 def shutdown():
+    """
+    cleans up and stops the program
+    return: None
+    """
+
     try:
         stopWorkers()
     except:

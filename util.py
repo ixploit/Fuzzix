@@ -113,9 +113,11 @@ class Content:
     def setContent(self,content):
         self.content = content
 
+#object to tell the workers to terminate
 TERMINATE_WORKER = Content(URL("http://TERMINA.TE"))
 
 class Content_Worker (threading.Thread):
+
     queue=Queue(maxsize=0)
     done=Queue(maxsize=0)
     workers=[]
@@ -124,6 +126,10 @@ class Content_Worker (threading.Thread):
         return super().__init__()
 
     def run(self):
+        """
+        run-method of the thread
+        return: None
+        """
         while True:
             content = Content_Worker.queue.get()
 
