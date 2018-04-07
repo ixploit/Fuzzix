@@ -1,14 +1,16 @@
 class File:
     """stores some general information about a spotted file"""
 
-    def __init__(self,name,size):
+    def __init__(self, name, size):
         self.name = name
         self.size = size
 
     def getName(self):
         return self.name
 
-NONE_FILE=File("",0)
+
+NONE_FILE = File("", 0)
+
 
 class Dir:
     """stores some general information about a spotted dir"""
@@ -18,7 +20,7 @@ class Dir:
         self.childDirs = childDirs
         self.spottedFiles = spottedFiles
 
-    def __fileKnown__(self,name):
+    def __fileKnown__(self, name):
         """
         checks, weither a file with this name is already known
         attribute name: the name of the file to check
@@ -29,7 +31,7 @@ class Dir:
                 return True
         return False
 
-    def __appendFile__(self,name,fileSize):
+    def __appendFile__(self, name, fileSize):
         """
         appends a file with given name to self.spottedFiles. Will not add a file twice.
         attribute name: the name of the spotted file
@@ -38,10 +40,10 @@ class Dir:
         if self.__fileKnown__(name):
             return
 
-        file = File(name,fileSize)
+        file = File(name, fileSize)
         self.spottedFiles.append(file)
 
-    def __dirKnown__(self,name):
+    def __dirKnown__(self, name):
         """
         checks, weither a dir with this name is already known
         attribute name: the name of the dir to check
@@ -52,7 +54,7 @@ class Dir:
                 return dir
         return None
 
-    def __appendDir__(self,name):
+    def __appendDir__(self, name):
         """
         appends a file with given name to self.spottedFiles. Will not add a file twice.
         attribute name: the name of the spotted file
@@ -63,14 +65,14 @@ class Dir:
         if alKnwonDir is not None:
             return alKnwonDir
 
-        dir = Dir(name,[],[])
+        dir = Dir(name, [], [])
         self.childDirs.append(dir)
         return dir
 
     def getName(self):
         return self.dirName
 
-    def appendPath(self,path,contentLength):
+    def appendPath(self, path, contentLength):
         """
         appends the spotted dirs and files to the dir
         attribute path: a path of type str containing dirs and probably a file, must already be extracted out of the URL and start with a '/'
@@ -78,36 +80,36 @@ class Dir:
         """
         startIndex = path.find('/')
         if startIndex == -1:
-            #not valid
-            raise ValueError('invalid path given!',path)
+            # not valid
+            raise ValueError('invalid path given!', path)
 
-        endIndex = path.find('/',startIndex+1)
+        endIndex = path.find('/', startIndex + 1)
         if endIndex == -1:
-            #not a dir but a file
-            pathName = path[startIndex+1:]
-            self.__appendFile__(pathName,contentLength)
+            # not a dir but a file
+            pathName = path[startIndex + 1:]
+            self.__appendFile__(pathName, contentLength)
         else:
-            #content of type dir
+            # content of type dir
             pathName = path[startIndex:endIndex]
 
-            #continue recursively
+            # continue recursively
             dir = self.__appendDir__(pathName)
-            dir.appendPath(path[endIndex:],contentLength)
+            dir.appendPath(path[endIndex:], contentLength)
 
-    def __printDirs__(self,str, indentation):
+    def __printDirs__(self, str, indentation):
         for dir in self.childDirs:
-            print("[D]" + (" "*indentation) + "`-" + dir.getName())
-            dir.__printDirs__(str,indentation+1)
+            print("[D]" + (" " * indentation) + "`-" + dir.getName())
+            dir.__printDirs__(str, indentation + 1)
         for file in self.spottedFiles:
-             print("[F]" + ("  "*indentation) + "`-" + file.getName())
+            print("[F]" + ("  " * indentation) + "`-" + file.getName())
 
         return str
-    
+
     def printDirs(self):
-        return self.__printDirs__("",0)
+        return self.__printDirs__("", 0)
+
 
 class __Protocol__:
-
     supportedProtocols = []
 
     def __init__(self, name):
@@ -128,43 +130,45 @@ class __Protocol__:
         else:
             raise ValueError("unsopported protocol")
 
+
 HTTPS = __Protocol__("HTTPS")
 HTTP = __Protocol__("HTTP")
 
 import re
 
+
 class URL:
     """stores some general information about the used URL"""
 
-    GOOD_STATUS=[200,203,302,304,401,402,403,405,407,500,502,503]
+    GOOD_STATUS = [200, 203, 302, 304, 401, 402, 403, 405, 407, 500, 502, 503]
     urlRegex = r"(http[s]?)://((?:[a-zA-Z]|[0-9]|[$\-_\.&+])+)((?:[a-zA-Z]|[0-9]|[$\?=\-_\.\/&+])*)(?::((?:[0-9]){1,5})){0,1}"
 
     def __init__(self, url):
-       if re.match(URL.urlRegex,url):
-           #url is valid -> parsing
-           
-          matches = re.findall(URL.urlRegex,url)[0]
-          self.proto = matches[0]
+        if re.match(URL.urlRegex, url):
+            # url is valid -> parsing
 
-          if self.proto.lower() == HTTP.getName().lower():
+            matches = re.findall(URL.urlRegex, url)[0]
+            self.proto = matches[0]
+
+            if self.proto.lower() == HTTP.getName().lower():
                 self.port = 80
-          elif self.proto.lower() == HTTPS.getName().lower():
+            elif self.proto.lower() == HTTPS.getName().lower():
                 self.port = 443
-          else:
-             raise ValueError('unsopported protocol given!')
+            else:
+                raise ValueError('unsopported protocol given!')
 
-          self.host = matches[1]
-          self.path = matches[2]
-          if len(matches[3]) >= 1:
-              self.port = matches[3]
+            self.host = matches[1]
+            self.path = matches[2]
+            if len(matches[3]) >= 1:
+                self.port = matches[3]
 
-       else:
-           #url is invalid
-           raise ValueError("the given url " + url + " is not valid!")
+        else:
+            # url is invalid
+            raise ValueError("the given url " + url + " is not valid!")
 
     def getURL(self):
-        return URL.buildURL(self.getProto(),self.getHost(),self.getPort(),self.getPath(),"")
-    
+        return URL.buildURL(self.getProto(), self.getHost(), self.getPort(), self.getPath(), "")
+
     def getPort(self):
         return self.port
 
@@ -173,7 +177,7 @@ class URL:
 
     def getProto(self):
         return self.proto
-    
+
     def getPath(self):
         return self.path
 
@@ -181,7 +185,7 @@ class URL:
         return self.getURL()
 
     @staticmethod
-    def buildURL(proto,host,port,dir,file):
+    def buildURL(proto, host, port, dir, file):
         """
         builds an URL out of the given parameters
         attribute proto: the used protocol as str
@@ -191,10 +195,11 @@ class URL:
         attribute file: the target file as str
         return: the crafted URL of type str
         """
-        return proto + "://" + host + ("/" + dir + "/" + file + ":" + str(port) if len((dir+file).replace('/',''))>0 else ":" +str(port) )   
-    
+        return proto + "://" + host + (
+            "/" + dir + "/" + file + ":" + str(port) if len((dir + file).replace('/', '')) > 0 else ":" + str(port))
+
     @staticmethod
-    def prettifyURL(host,rootURL,url):
+    def prettifyURL(host, rootURL, url):
         """
         prettifies a given url
         attribute host: an instance of the root host
@@ -202,25 +207,27 @@ class URL:
         attribute url: a str containing the URL wich is supposed to be prettified
         return: the prettified URL as URL
         """
-        if re.match(URL.urlRegex,url):
+        if re.match(URL.urlRegex, url):
             return URL(url)
 
         if url.startswith('//'):
-            url = url.replace('//',host.getURL().getProto() +"://",1)
+            url = url.replace('//', host.getURL().getProto() + "://", 1)
 
-        relativeURLRegex=r"([\/|\.\/|\.\.\/]*)\b([-a-zA-Z0-9@:%_\+.~#&//=]*)(?:[\/|.])([-a-zA-Z0-9@:%_\+.~#&//=]*)\?{0,1}(?:[-a-zA-Z0-9@:%_\+.~#&//=]*)"
-        if re.match(relativeURLRegex,url):
-            url = URL.buildURL(rootURL.getProto(),rootURL.getHost(),rootURL.getPort(),rootURL.getPath()+url,"")
+        relativeURLRegex = r"([\/|\.\/|\.\.\/]*)\b([-a-zA-Z0-9@:%_\+.~#&//=]*)(?:[\/|.])([-a-zA-Z0-9@:%_\+.~#&//=]*)\?{0,1}(?:[-a-zA-Z0-9@:%_\+.~#&//=]*)"
+        if re.match(relativeURLRegex, url):
+            url = URL.buildURL(rootURL.getProto(), rootURL.getHost(), rootURL.getPort(), rootURL.getPath() + url, "")
         try:
             return URL(url)
         except ValueError as e:
-            raise ValueError('couldn\'t prettify URL',url,' it is not valid')
-class Host:
+            raise ValueError('couldn\'t prettify URL', url, ' it is not valid')
 
+
+class Host:
     """represents a webhost"""
+
     def __init__(self, url, rootDir):
-        
-        #typecheck
+
+        # typecheck
         if type(url) is not URL:
             raise ValueError("wrong type for attribute url")
         if type(rootDir) is not Dir:
@@ -235,7 +242,7 @@ class Host:
     def getRootdir(self):
         return self.rootDir
 
-    def isExternal(self,url):
+    def isExternal(self, url):
         """
         checks weither a given url is referencing an external host
         attribute url: the url to check as URL
@@ -246,13 +253,14 @@ class Host:
                 return False
             else:
                 return True
-        
+
         except ValueError as e:
-            raise ValueError('invalid url given',e)
+            raise ValueError('invalid url given', e)
+
 
 class Settings:
 
-    def __init__(self, spider, fuzz, url, verifyCert, threads, recursion ):
+    def __init__(self, spider, fuzz, url, verifyCert, threads, recursion):
         if type(spider) is not bool:
             raise ValueError("attribute spider must be of type bool")
         if type(fuzz) is not bool:
@@ -278,7 +286,7 @@ class Settings:
 
     def getSpider(self):
         return self.spider
-    
+
     def getFuzz(self):
         return self.fuzz
 
@@ -295,8 +303,9 @@ class Settings:
         return self.recursion
 
     """warning, not yet supported!"""
+
     def getRootDir(self):
         """
         return: returns an empty root dir
         """
-        return Dir("",[],[])
+        return Dir("", [], [])
