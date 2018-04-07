@@ -113,6 +113,8 @@ class Content:
     def setContent(self,content):
         self.content = content
 
+TERMINATE_WORKER = Content(URL("http://TERMINA.TE"))
+
 class Content_Worker (threading.Thread):
     queue=Queue(maxsize=0)
     done=Queue(maxsize=0)
@@ -124,6 +126,12 @@ class Content_Worker (threading.Thread):
     def run(self):
         while True:
             content = Content_Worker.queue.get()
+
+            #stop when terminate signal received
+            if content.getURL().getURL() == TERMINATE_WORKER.getURL().getURL():
+                Content_Worker.queue.task_done()
+                return
+
             try:
                 status,htmlContent=WebApi.receiveURL(content.getURL())
                 content.setContent(htmlContent)

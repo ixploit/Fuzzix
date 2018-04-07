@@ -1,6 +1,6 @@
 import argparse
 
-from util import logger, Content_Worker, Content
+from util import logger, Content_Worker, Content, TERMINATE_WORKER
 from Data import Host, Dir, File, URL, NONE_FILE
 from Data import Settings
 from util import WebApi
@@ -104,6 +104,24 @@ def startWorkers(amount=4):
         Content_Worker.workers.append(c)
     logger.info("Threads started")
 
+def stopWorkers():
+    logger.info("stopping workers")
+    for w in Content_Worker.workers:
+        Content_Worker.queue.put(TERMINATE_WORKER)
+    for w in Content_Worker.workers:
+        w.join()
+
+    logger.info("stopped workers")
+
+def shutdown():
+    try:
+        stopWorkers()
+    except:
+        logger.error("failed to stop threads!")
+
+    logger.info("finished scan")
+    exit()
+
 if __name__ == "__main__":
    
     try:
@@ -122,5 +140,5 @@ if __name__ == "__main__":
     if settings.getFuzz():
         urlFuzzer.fuzz()
 
-    logger.info("Scan completed")
+    shutdown()
 
