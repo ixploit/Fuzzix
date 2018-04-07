@@ -137,7 +137,7 @@ class URL:
     """stores some general information about the used URL"""
 
     GOOD_STATUS=[200,203,302,304,401,402,403,405,407,500,502,503]
-    urlRegex = r"(http[s]?)://((?:[a-zA-Z]|[0-9]|[$\-_\.&+])+)((?:[a-zA-Z]|[0-9]|[$\-_\.\/&+])*)(?::((?:[0-9]){1,5})){0,1}"
+    urlRegex = r"(http[s]?)://((?:[a-zA-Z]|[0-9]|[$\-_\.&+])+)((?:[a-zA-Z]|[0-9]|[$\?=\-_\.\/&+])*)(?::((?:[0-9]){1,5})){0,1}"
 
     def __init__(self, url):
        if re.match(URL.urlRegex,url):
