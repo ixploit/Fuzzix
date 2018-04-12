@@ -8,7 +8,15 @@
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
-            "program": "${file}"
+            "program": "${file}",
+            "args": [
+                "url",
+                "http://v-i-a.co",
+                "-s",
+                "-f",
+                "-t",
+                "64"
+            ]
         },
         {
             "name": "Python: Attach",
@@ -26,12 +34,6 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": [
-                "url",
-                "https://cybertschunk.net",
-                "-s",
-                "-f"
-            ]
         },
         {
             "name": "Python: Terminal (external)",
