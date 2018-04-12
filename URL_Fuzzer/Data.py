@@ -144,6 +144,12 @@ class URL:
     urlRegex = r"(http[s]?)://((?:[a-zA-Z]|[0-9]|[$\-_\.&+])+)((?:[a-zA-Z]|[0-9]|[$\?=\-_\.\/&+])*)(?::((?:[0-9]){1,5})){0,1}"
 
     def __init__(self, url):
+        """
+        initializes the object with a given URL 
+        attribute url: the url the object is meant to store
+        return: None
+        raises: ValueError if no valid URL is passed
+        """
         if re.match(URL.urlRegex, url):
             # url is valid -> parsing
 
