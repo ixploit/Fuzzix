@@ -15,6 +15,7 @@ ixfuzz wird in [Python3](https://www.python.org/) programmiert. Als Entwicklungs
  1. Pull Requests müssen sich immer auf einen (oder mehrere) offene Issues beziehen. Entdeckst du einen Fehler und möchtest diesen schließen, öffne also einfach vorab einen entsprechenden Issue und gebe an, dass du diesen bearbeiten möchtest.
  2. Der oder die Issues, auf die sich der Pull-Request bezieht, müssen im Pull-Request zur besseren Übersicht referenziert werden.
  3. Pull-Requests werden bitte immer gegen den Master-Branch gestellt.
+ 4. Sprache dieses Projekts ist im Allgemeinen Englisch. 
 
 ## Wie programmiere ich am besten?
 Achte auf einen aussagekräftigen Programmcode. Variablen, Funktionen und Klassen sollten aussagekräftige Namen tragen. Auch ist es Ziel der beteiligten Entwickler, jeder Funktion und jeder Klasse einen aussagekräftigen Kommentar über deren Funktion beizulegen. 
