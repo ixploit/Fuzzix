@@ -1,9 +1,9 @@
 import argparse
 
-from URL_Fuzzer.Data import Host, URL
-from URL_Fuzzer.Data import Settings
-from URL_Fuzzer.util import WebApi
-from URL_Fuzzer.util import logger, Content_Worker, Content, TERMINATE_WORKER
+from Data import Host, URL
+from Data import Settings
+from util import WebApi
+from util import logger, Content_Worker, Content, TERMINATE_WORKER
 
 settings = None
 

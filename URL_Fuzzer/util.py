@@ -9,11 +9,11 @@ from bs4 import BeautifulSoup
 
 logger = ColoredLogger(name="MAIN")
 
-from URL_Fuzzer.Data import URL
-from URL_Fuzzer.Data import HTTP
-from URL_Fuzzer.Data import Host
-from URL_Fuzzer.Data import Dir
-from URL_Fuzzer.Data import File
+from Data import URL
+from Data import HTTP
+from Data import Host
+from Data import Dir
+from Data import File
 
 
 class __WebApi__:
