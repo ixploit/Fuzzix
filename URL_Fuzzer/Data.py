@@ -263,6 +263,7 @@ class Host:
         except ValueError as e:
             raise ValueError('invalid url given', e)
 
+import configparser
 
 class Settings:
 
@@ -289,6 +290,20 @@ class Settings:
         self.verifyCert = verifyCert
         self.threads = threads
         self.recursion = recursion
+
+    def readConfig(self,path):
+        """
+        reads the config file located on the given locaton
+        attribute path: the path to the config file as str
+        raises: ValueError, if no config settings could be found at the given location
+        return: None
+        """
+        config = configparser.ConfigParser()
+        config.read(path)
+        if config.sections() <= 0:
+            raise ValueError("given config empty or not existend")
+        
+        
 
     def getSpider(self):
         return self.spider

@@ -1,4 +1,5 @@
 import argparse
+import configparser
 
 from Data import Host, URL
 from Data import Settings
@@ -56,8 +57,14 @@ class URL_Fuzzer:
         self.host.getRootdir().printDirs()
         logger.info("spidering completed")
 
+    
+
     def fuzz(self):
         logger.info("fuzzing URL", self.host.getURL())
+        
+        
+        logger.info("fuzzing completed")
+
 
 
 def startup():
