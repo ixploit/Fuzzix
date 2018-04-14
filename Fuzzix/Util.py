@@ -39,15 +39,33 @@ class __WebApi__:
                            file.getName())
         r = self.poolManager.request('GET', url)
 
-        return r.status, str(BeautifulSoup(r.data, 'html.parser'))
+        content = Content(URL(url))
+        content.setStatus(r.status)
+        content.setContentType(r.getheaders()['Content-Type'])
+
+        #check filetype
+        if 'text' in r.getheaders()['Content-Type']:
+            content.setContent(str(BeautifulSoup(r.data, 'html.parser')))
+        else:
+            content.setContent(r.data)
+
+        return content
 
     def receiveURL(self, url):
         if type(url) is not URL:
-            raise ValueError('unsopportd type for attribute url')
+            raise ValueError('unsopported type for attribute url')
 
         r = self.poolManager.request('GET', url.getURL())
-        return r.status, str(BeautifulSoup(r.data, 'html.parser'))
+        content = Content(url)
+        content.setStatus(r.status)
+        content.setContentType(r.getheaders()['Content-Type'])
 
+        #check filetype
+        if 'text' in r.getheaders()['Content-Type']:
+            content.setContent(str(BeautifulSoup(r.data, 'html.parser')))
+        else:
+            content.setContent(r.data) 
+        return content
     def grabRefs(self, content):
         """
         extracts most hyperlinks out of a given html document
@@ -102,11 +120,17 @@ class Content:
     def getStatus(self):
         return self.status
 
+    def getContentType(self):
+        return self.contentType
+
     def setStatus(self, status):
         self.status = status
 
     def setContent(self, content):
         self.content = content
+    
+    def setContentType(self,contentType):
+        self.contentType = contentType
 
 
 # object to tell the workers to terminate
@@ -135,9 +159,7 @@ class Content_Worker(threading.Thread):
                 return
 
             try:
-                status, htmlContent = WebApi.receiveURL(content.getURL())
-                content.setContent(htmlContent)
-                content.setStatus(status)
+                content = WebApi.receiveURL(content.getURL())
                 Content_Worker.done.put(content)
             except:
                 pass

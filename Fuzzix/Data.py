@@ -147,7 +147,7 @@ class URL:
     """stores some general information about the used URL"""
 
     GOOD_STATUS = [200, 203, 302, 304, 401, 402, 403, 405, 407, 500, 502, 503]
-    urlRegex = r"(http[s]?)://((?:[a-zA-Z]|[0-9]|[$\-_\.&+])+)((?:[a-zA-Z]|[0-9]|[$\?=\-_\.\/&+])*)(?::((?:[0-9]){1,5})){0,1}"
+    urlRegex = r"(http[s]?)://((?:[a-zA-Z]|[0-9]|[$\-_\.&+])+)((?:[a-zA-Z]|[0-9]|[$\?=\-_\.\/&+#])*)(?::((?:[0-9]){1,5})){0,1}"
 
     def __init__(self, url):
         """
@@ -211,7 +211,7 @@ class URL:
             dir = dir[1:]
         if dir.endswith('/'):
             dir = dir[:-1]
-        file.replace('/','')
+        file = file.replace('/','')
         
         path = ''
         if (dir+file).endswith('/'):
@@ -245,19 +245,27 @@ class URL:
         attribute url: a str containing the URL wich is supposed to be prettified
         return: the prettified URL as URL
         """
-        if re.match(URL.urlRegex, url):
+        #check weither URL is already absolute and valid
+        if URL.isValidURL(url):
             return URL(url)
 
         if url.startswith('//'):
             url = url.replace('//', host.getURL().getProto() + "://", 1)
+        
+        if url.startswith('#'):
+            url = rootURL.getURL() + url
 
-        relativeURLRegex = r"([\/|\.\/|\.\.\/]*)\b([-a-zA-Z0-9@:%_\+.~#&//=]*)(?:[\/|.])([-a-zA-Z0-9@:%_\+.~#&//=]*)\?{0,1}(?:[-a-zA-Z0-9@:%_\+.~#&//=]*)"
+        relativeURLRegex = r"^([\/|\.\/|\.\.\/]+.*)"
+        relativeToRootURLRegex = r"^(.*[\/|\.\/|\.\.\/]+.*)"
         if re.match(relativeURLRegex, url):
-            url = URL.buildURL(rootURL.getProto(), rootURL.getHost(), rootURL.getPort(), rootURL.getPath() + url, "")
+            url = URL.buildURL(rootURL.getProto(), rootURL.getHost(), rootURL.getPort(), rootURL.getPath(), url)
+        else:
+            if re.match(relativeToRootURLRegex,url):
+                url = URL.buildURL(rootURL.getProto(),rootURL.getHost(),rootURL.getPort(),url,"")
         try:
             return URL(url)
         except ValueError:
-            raise ValueError('couldn\'t prettify URL' + url + ' found in ' + rootURL.getURL() + ' it is not valid')
+            raise ValueError('couldn\'t prettify URL ' + url + ' found in ' + rootURL.getURL() + ' it is not valid')
 
     @staticmethod
     def isValidURL(url):
