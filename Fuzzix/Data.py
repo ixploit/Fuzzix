@@ -302,14 +302,13 @@ class Host:
         attribute url: the url to check as URL
         return: True if the url is pointing on an external host, otherwise False
         """
-        try:
-            if self.getURL().getHost() == url.getHost():
-                return False
-            else:
-                return True
+        if type(url) is not URL:
+            raise ValueError('type URL required for attribute url')
 
-        except ValueError as e:
-            raise ValueError('invalid url given', e)
+        if self.getURL().getHost() == url.getHost():
+            return False
+        else:
+            return True
 
 import configparser
 
