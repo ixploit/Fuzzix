@@ -224,8 +224,8 @@ class URL:
             url = URL.buildURL(rootURL.getProto(), rootURL.getHost(), rootURL.getPort(), rootURL.getPath() + url, "")
         try:
             return URL(url)
-        except ValueError as e:
-            raise ValueError('couldn\'t prettify URL', url, ' it is not valid')
+        except ValueError:
+            raise ValueError('couldn\'t prettify URL' + url + ' it is not valid')
 
 
 class Host:
