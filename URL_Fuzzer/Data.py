@@ -1,3 +1,9 @@
+
+#logger for this file
+from coloredlogger import ColoredLogger
+data_logger = ColoredLogger(name="Data")
+
+
 class File:
     """stores some general information about a spotted file"""
 
@@ -315,6 +321,8 @@ class __Settings__:
         if key in self.config:
             return self.config[key]
         else:
+            #logging waring
+            data_logger.wtf("key " + key + " couldn't be found, returning default value " + default + " instead")
             return default
     
     def printConfig(self):
