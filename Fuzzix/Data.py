@@ -233,6 +233,7 @@ class URL:
                     path = '/' + dir
                 else:
                     path = '/' + dir + '/' + file
+        path = path.replace('//','/')
         
         return proto + "://" + host + path
 
@@ -258,10 +259,10 @@ class URL:
         relativeURLRegex = r"^([\/|\.\/|\.\.\/]+.*)"
         relativeToRootURLRegex = r"^(.*[\/|\.\/|\.\.\/]+.*)"
         if re.match(relativeURLRegex, url):
-            url = URL.buildURL(rootURL.getProto(), rootURL.getHost(), rootURL.getPort(), rootURL.getPath(), url)
+            url = URL.buildURL(rootURL.getProto(), rootURL.getHost(), rootURL.getPort(), rootURL.getPath() + '/' + url, '')
         else:
             if re.match(relativeToRootURLRegex,url):
-                url = URL.buildURL(rootURL.getProto(),rootURL.getHost(),rootURL.getPort(),url,"")
+                url = URL.buildURL(rootURL.getProto(),rootURL.getHost(),rootURL.getPort(),rootURL.getPath() + '/' + url, '')
         try:
             return URL(url)
         except ValueError:

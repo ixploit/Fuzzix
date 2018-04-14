@@ -35,10 +35,10 @@ class URL_Fuzzer:
             while not Content_Worker.done.empty():
                 content = Content_Worker.done.get()
                 Content_Worker.done.task_done()
-                if content.getStatus() in URL.GOOD_STATUS: 
+                if content.getStatus() in URL.GOOD_STATUS:
+                    rootURL = content.getURL() 
                     if ('text' in content.getContentType() or 'script' in content.getContentType()):
                         refs = WebApi.grabRefs(content.getContent())
-                        rootURL = content.getURL()
                         doneURLs.append(rootURL.getURL())
                         for ref in refs:
                             try:
@@ -55,7 +55,7 @@ class URL_Fuzzer:
                             except ValueError as e:
                                 Logger.error(e)
                 else:
-                    Logger.error('received error ' + str(content.getStatus()) + ' for ' + content.getURL().getURL() + ' found in ' + rootURL.getURL())
+                    Logger.wtf('received error ' + str(content.getStatus()) + ' for ' + content.getURL().getURL())
         self.host.getRootdir().printDirs()
         Logger.info("spidering completed")
 
