@@ -202,13 +202,39 @@ class URL:
         builds an URL out of the given parameters
         attribute proto: the used protocol as str
         attribute host: the target host as str
-        attribute port: the target port as int
+        attribute port: the target port as int -> warning, currently not supported!
         attribute dir: the target dir as str
         attribute file: the target file as str
         return: the crafted URL of type str
         """
-        return proto + "://" + host + (
-            "/" + dir + "/" + file + ":" + str(port) if len((dir + file).replace('/', '')) > 0 else ":" + str(port))
+        if dir.startswith('/'):
+            dir = dir[1:]
+        if dir.endswith('/'):
+            dir = dir[:-1]
+        file.replace('/','')
+        
+        path = ''
+        if (dir+file).endswith('/'):
+            if not file:
+                path = '/' + dir[:-1]
+            else:
+                if not dir:
+                    path = '/' + file[:-1]
+                else:
+                    path = '/' + dir + '/' + file[:-1]
+        else:
+            if not dir:
+                if not file:
+                    path = ''
+                else:
+                    path = '/' + file
+            else:
+                if not file:
+                    path = '/' + dir
+                else:
+                    path = '/' + dir + '/' + file
+        
+        return proto + "://" + host + path
 
     @staticmethod
     def prettifyURL(host, rootURL, url):
@@ -231,7 +257,7 @@ class URL:
         try:
             return URL(url)
         except ValueError:
-            raise ValueError('couldn\'t prettify URL' + url + ' it is not valid')
+            raise ValueError('couldn\'t prettify URL' + url + ' found in ' + rootURL.getURL() + ' it is not valid')
 
     @staticmethod
     def isValidURL(url):
@@ -295,7 +321,7 @@ class __Settings__:
         """
         configFile = configparser.ConfigParser()
         configFile.read(path)
-        if configFile.sections() <= 0:
+        if len(configFile.sections()) <= 0:
             raise ValueError("given config empty or not existend")
         for section in configFile.sections():
             for key in configFile[section]:

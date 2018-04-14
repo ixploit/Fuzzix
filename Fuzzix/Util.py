@@ -4,16 +4,10 @@ urllib3.disable_warnings()
 
 import threading
 from queue import Queue
-from coloredlogger import ColoredLogger
 from bs4 import BeautifulSoup
 
-logger = ColoredLogger(name="MAIN")
-
-from Data import URL
-from Data import HTTP
-from Data import Host
-from Data import Dir
-from Data import File
+from Fuzzix import Logger
+from Fuzzix.Data import URL, HTTP, Host, Dir, File
 
 
 class __WebApi__:

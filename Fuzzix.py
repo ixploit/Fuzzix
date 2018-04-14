@@ -1,7 +1,8 @@
 import argparse
 
-from Data import Host, URL, Settings, Dir
-from util import WebApi, logger, Content_Worker, Content, TERMINATE_WORKER
+from Fuzzix.Data import Host, URL, Settings, Dir
+from Fuzzix.Util import WebApi, Content_Worker, Content, TERMINATE_WORKER
+from Fuzzix import Logger
 
 settings = None
 
@@ -15,7 +16,7 @@ class URL_Fuzzer:
         else:
             raise ValueError("wrong type for attribute host!")
 
-        logger.info("fuzzing url", self.host.getURL())
+        Logger.info("fuzzing url", self.host.getURL())
 
     def spider(self):
         """
@@ -23,11 +24,11 @@ class URL_Fuzzer:
         return: None
         """
 
-        logger.info("Spidering URL", self.host.getURL())
+        Logger.info("Spidering URL", self.host.getURL())
         rootcontent = Content(self.host.getURL())
         Content_Worker.queue.put(rootcontent)
         for i in range(0, Settings.readAttribute("recursion_depth",0)):
-            logger.info('Processing recursion', i, Content_Worker.queue.qsize(), 'tasks to be done')
+            Logger.info('Processing recursion', i, Content_Worker.queue.qsize(), 'tasks to be done')
             Content_Worker.queue.join()
 
             while not Content_Worker.done.empty():
@@ -49,18 +50,19 @@ class URL_Fuzzer:
                             self.host.getRootdir().appendPath(path, length)
                             Content_Worker.queue.put(newContent)
                         except ValueError as e:
-                            continue
-
+                            Logger.error(e)
+                else:
+                    Logger.error('received error ' + str(content.getStatus()) + ' for ' + content.getURL().getURL())
         self.host.getRootdir().printDirs()
-        logger.info("spidering completed")
+        Logger.info("spidering completed")
 
     
 
     def fuzz(self):
-        logger.info("fuzzing URL", self.host.getURL())
+        Logger.info("fuzzing URL", self.host.getURL())
         
         
-        logger.info("fuzzing completed")
+        Logger.info("fuzzing completed")
 
 
 
@@ -102,6 +104,7 @@ def startup():
         Settings.writeAttribute("verify_cert",verify_cert)
         Settings.writeAttribute("threads",threads)
         Settings.writeAttribute("recursion_depth",recursion_depth)
+        Settings.readConfig("config/config.ini")
 
         WebApi.setProtocol(URL(Settings.readAttribute("host_url","")).getProto())
     except ValueError as e:
@@ -115,12 +118,12 @@ def startWorkers(amount=4):
     return: None
     """
 
-    logger.info("Starting " + str(amount) + " threads")
+    Logger.info("Starting " + str(amount) + " threads")
     for i in range(0, amount):
         c = Content_Worker()
         c.start()
         Content_Worker.workers.append(c)
-    logger.info("Threads started")
+    Logger.info("Threads started")
 
 
 def stopWorkers():
@@ -129,13 +132,13 @@ def stopWorkers():
     return: None
     """
 
-    logger.info("stopping workers")
+    Logger.info("stopping workers")
     for w in Content_Worker.workers:
         Content_Worker.queue.put(TERMINATE_WORKER)
     for w in Content_Worker.workers:
         w.join()
 
-    logger.info("stopped workers")
+    Logger.info("stopped workers")
 
 
 def shutdown():
@@ -147,9 +150,9 @@ def shutdown():
     try:
         stopWorkers()
     except:
-        logger.error("failed to stop threads!")
+        Logger.error("failed to stop threads!")
 
-    logger.info("finished scan")
+    Logger.info("finished scan")
     exit()
 
 
@@ -159,7 +162,7 @@ if __name__ == "__main__":
         startup()
         startWorkers(Settings.readAttribute("threads",4))
     except ValueError as e:
-        logger.error(e)
+        Logger.error(e)
         exit()
 
     targetHost = Host(
