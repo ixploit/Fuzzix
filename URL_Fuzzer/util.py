@@ -125,7 +125,7 @@ class Content_Worker(threading.Thread):
     workers = []
 
     def __init__(self):
-        return super().__init__()
+        super().__init__()
 
     def run(self):
         """

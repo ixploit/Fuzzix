@@ -1,10 +1,7 @@
 import argparse
-import configparser
 
-from Data import Host, URL
-from Data import Settings
-from util import WebApi
-from util import logger, Content_Worker, Content, TERMINATE_WORKER
+from Data import Host, URL, Settings, Dir
+from util import WebApi, logger, Content_Worker, Content, TERMINATE_WORKER
 
 settings = None
 
@@ -29,7 +26,7 @@ class URL_Fuzzer:
         logger.info("Spidering URL", self.host.getURL())
         rootcontent = Content(self.host.getURL())
         Content_Worker.queue.put(rootcontent)
-        for i in range(0, settings.getRecursion()):
+        for i in range(0, Settings.readAttribute("recursion_depth",0)):
             logger.info('Processing recursion', i, Content_Worker.queue.qsize(), 'tasks to be done')
             Content_Worker.queue.join()
 
@@ -69,11 +66,9 @@ class URL_Fuzzer:
 
 def startup():
     """
-    initializes the program
-    return: attribute of class Settings containing all startup options
+    initializes the program, writes all startup options in the Settings Object
+    return: None
     """
-
-    global settings
 
     # parsing command line arguments
     parser = argparse.ArgumentParser()
@@ -87,27 +82,28 @@ def startup():
 
     opts = parser.parse_args()
 
-    # host
+    # parse command line args
     host_url = opts.url[1]
-
-    # spider
     spider = opts.spider
-
-    # fuzz
     fuzz = opts.fuzz
-
-    # verifyCert
-    verifyCert = opts.verifyCert
-
-    # threads
+    verify_cert = opts.verifyCert
     threads = opts.threads
+    recursion_depth = opts.recursion
 
-    # recursion
-    recursion = opts.recursion
-
+    # write attributes to Settings
     try:
-        settings = Settings(spider, fuzz, host_url, verifyCert, threads, recursion)
-        WebApi.setProtocol(settings.getURL().getProto())
+        # check weither given URL is valid
+        if not URL.isValidURL(host_url):
+            raise ValueError(host_url + " is not a valid URL")
+
+        Settings.writeAttribute("host_url",host_url)
+        Settings.writeAttribute("spider",spider)
+        Settings.writeAttribute("fuzz",fuzz)
+        Settings.writeAttribute("verify_cert",verify_cert)
+        Settings.writeAttribute("threads",threads)
+        Settings.writeAttribute("recursion_depth",recursion_depth)
+
+        WebApi.setProtocol(URL(Settings.readAttribute("host_url","")).getProto())
     except ValueError as e:
         raise e
 
@@ -161,18 +157,22 @@ if __name__ == "__main__":
 
     try:
         startup()
-        startWorkers(settings.getThreads())
+        startWorkers(Settings.readAttribute("threads",4))
     except ValueError as e:
         logger.error(e)
         exit()
 
-    targetHost = Host(settings.getURL(), settings.getRootDir())
+    targetHost = Host(
+        URL(Settings.readAttribute("host_url","")), 
+        Dir(Settings.readAttribute("root_dir",""),[],[])
+        )
+
     urlFuzzer = URL_Fuzzer(targetHost)
 
-    if settings.getSpider():
+    if Settings.readAttribute("spider",False):
         urlFuzzer.spider()
 
-    if settings.getFuzz():
+    if Settings.readAttribute("fuzz",False):
         urlFuzzer.fuzz()
 
     shutdown()

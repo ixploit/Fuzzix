@@ -1,3 +1,9 @@
+
+#logger for this file
+from coloredlogger import ColoredLogger
+data_logger = ColoredLogger(name="Data")
+
+
 class File:
     """stores some general information about a spotted file"""
 
@@ -119,7 +125,7 @@ class __Protocol__:
         return self.name
 
     def __str__(self):
-        return getName()
+        return self.getName()
 
     @staticmethod
     def getProtocol(name):
@@ -224,9 +230,17 @@ class URL:
             url = URL.buildURL(rootURL.getProto(), rootURL.getHost(), rootURL.getPort(), rootURL.getPath() + url, "")
         try:
             return URL(url)
-        except ValueError as e:
-            raise ValueError('couldn\'t prettify URL', url, ' it is not valid')
+        except ValueError:
+            raise ValueError('couldn\'t prettify URL' + url + ' it is not valid')
 
+    @staticmethod
+    def isValidURL(url):
+        """
+        checks weither a given URL is valid
+        attribute url: the url to check as str
+        return: True if URL is valid, otherwise False
+        """
+        return re.match(URL.urlRegex,url)
 
 class Host:
     """represents a webhost"""
@@ -265,68 +279,53 @@ class Host:
 
 import configparser
 
-class Settings:
+class __Settings__:
+    """a class to store settings"""
 
-    def __init__(self, spider, fuzz, url, verifyCert, threads, recursion):
-        if type(spider) is not bool:
-            raise ValueError("attribute spider must be of type bool")
-        if type(fuzz) is not bool:
-            raise ValueError("attribute fuzz must be of type bool")
-        if type(url) is not str:
-            raise ValueError("attribute url must be of type str")
-        if type(verifyCert) is not bool:
-            raise ValueError("attribute verifyCert must be of type bool")
-        if type(threads) is not int:
-            raise ValueError("attribute threads must be of type int")
-        if type(recursion) is not int:
-            raise ValueError("attribute recursion must be of type int")
-
-        try:
-            self.url = URL(url)
-        except ValueError as e:
-            raise e
-        self.spider = spider
-        self.fuzz = fuzz
-        self.verifyCert = verifyCert
-        self.threads = threads
-        self.recursion = recursion
+    def __init__(self):
+        self.config = {}
+        
 
     def readConfig(self,path):
         """
-        reads the config file located on the given locaton
+        reads the config file located on the given locaton using configparser
         attribute path: the path to the config file as str
         raises: ValueError, if no config settings could be found at the given location
         return: None
         """
-        config = configparser.ConfigParser()
-        config.read(path)
-        if config.sections() <= 0:
+        configFile = configparser.ConfigParser()
+        configFile.read(path)
+        if configFile.sections() <= 0:
             raise ValueError("given config empty or not existend")
+        for section in configFile.sections():
+            for key in configFile[section]:
+                self.config[section + "/" + key]=configFile[section][key]
         
-        
 
-    def getSpider(self):
-        return self.spider
-
-    def getFuzz(self):
-        return self.fuzz
-
-    def getURL(self):
-        return self.url
-
-    def getVerifyCert(self):
-        return self.verifyCert
-
-    def getThreads(self):
-        return self.threads
-
-    def getRecursion(self):
-        return self.recursion
-
-    """warning, not yet supported!"""
-
-    def getRootDir(self):
+    def writeAttribute(self,key,value):
         """
-        return: returns an empty root dir
+        writes an given attribute to the config file
+        attribute key: the key for the attribute
+        attribute value: the value to store
+        return: None
         """
-        return Dir("", [], [])
+        self.config[key] = value
+
+    def readAttribute(self,key,default):
+        """
+        reads an attribute from the config
+        attribute key: the key to read
+        attribute default: the default value, which will be returned, if the key couldn't be found in the config
+        return: either the default-value or the value of the key in the config
+        """
+        if key in self.config:
+            return self.config[key]
+        else:
+            #logging waring
+            data_logger.wtf("key " + key + " couldn't be found, returning default value " + default + " instead")
+            return default
+    
+    def printConfig(self):
+        for key in self.config:
+            print(key + " : " + self.config[key])
+Settings = __Settings__()
