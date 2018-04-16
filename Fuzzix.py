@@ -55,8 +55,8 @@ class URL_Fuzzer:
             Content_Worker.queue.join()
             
             #processing finished resulsts
+            Logger.info(Content_Worker.done.qsize(),"result(s) to analyze")
             while not Content_Worker.done.empty():
-                Logger.info(Content_Worker.done.qsize(),"result(s) to analyze")
                 content = Content_Worker.done.get()
                 Content_Worker.done.task_done()
                 
@@ -78,8 +78,8 @@ class URL_Fuzzer:
                         newContent = Content(url)
                         newContent.setProcessor(URL_Fuzzer.__spiderworker__)
                         toProceed.append(newContent)
-                    except ValueError as e:
-                        Logger.error(e)
+                    except ValueError:
+                        continue
             
             #recusion done
             for a in range(0,len(toProceed)):
@@ -192,7 +192,7 @@ def shutdown():
 
 if __name__ == "__main__":
     print_banner()
-    
+
     try:
         startup()
         startWorkers(Settings.readAttribute("threads",4))
