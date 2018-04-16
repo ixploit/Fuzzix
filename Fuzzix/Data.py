@@ -21,10 +21,17 @@ NONE_FILE = File("", 0)
 class Dir:
     """stores some general information about a spotted dir"""
 
-    def __init__(self, dirName, childDirs, spottedFiles):
+    def __init__(self, dirName, rootDir):
+        """
+        created a new Dir
+        attribute dirName: the name of the new dir
+        attribute rootDir: the root directory of the dir, can be None
+        return: None
+        """
         self.dirName = dirName
-        self.childDirs = childDirs
-        self.spottedFiles = spottedFiles
+        self.childDirs = []
+        self.spottedFiles = []
+        self.rootDir = rootDir
 
     def __fileKnown__(self, name):
         """
@@ -71,7 +78,7 @@ class Dir:
         if alKnwonDir is not None:
             return alKnwonDir
 
-        dir = Dir(name, [], [])
+        dir = Dir(name,self)
         self.childDirs.append(dir)
         return dir
 
@@ -98,22 +105,37 @@ class Dir:
             # content of type dir
             pathName = path[startIndex:endIndex]
 
+            if pathName.startswith('/..'):
+                if self.rootDir is None:
+                    data_logger.wtf('website browsing out of webroot')
+                    return
+                else:
+                    pathName = path[3:]
+                    self.rootDir.appendPath(pathName, contentLength)
+                    return
+            if pathName.startswith('/./'):
+                pathName = path[3:]
+                self.appendPath(pathName,contentLength)
+
             # continue recursively
             dir = self.__appendDir__(pathName)
             dir.appendPath(path[endIndex:], contentLength)
 
-    def __printDirs__(self, str, indentation):
-        for dir in self.childDirs:
-            print("[D]" + (" " * indentation) + "`-" + dir.getName())
-            dir.__printDirs__(str, indentation + 1)
+    def __printDirs__(self, path):
+        path = path + self.dirName
+        ostr = '[D] ' + path + '\n'
         for file in self.spottedFiles:
-            print("[F]" + ("  " * indentation) + "`-" + file.getName())
+            ostr = ostr + '[F] ' + path + '/' + file.getName() + '\n'
 
-        return str
+        for dir in self.childDirs:
+            ostr = ostr + dir.__printDirs__(path)
+        
+        return ostr
 
-    def printDirs(self):
-        return self.__printDirs__("", 0)
-
+    def __str__(self):
+        return self.__printDirs__('')
+       
+        
 
 class __Protocol__:
     supportedProtocols = []

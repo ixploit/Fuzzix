@@ -98,7 +98,7 @@ class URL_Fuzzer:
             Logger.info("Recusion",i,"done")
 
         #printing result    
-        self.host.getRootdir().printDirs()
+        print(self.host.getRootdir())
         Logger.info("spidering completed")
 
     def fuzz(self):
@@ -118,7 +118,7 @@ def startup():
     # parsing command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('url', metavar='url', help="the victims adress", type=str, nargs='+')
-    parser.add_argument('-t', '--threads', help="the amount of threads to use", type=int, default=4)
+    parser.add_argument('-t', '--threads', help="the amount of threads to use", type=int, default=64)
     parser.add_argument('-r', '--recursion', help="the maximum recursion depth", type=int, default=5)
     parser.add_argument("-s", "--spider", action="store_true",
                         help="spider the given website")
@@ -211,7 +211,7 @@ if __name__ == "__main__":
 
     targetHost = Host(
         URL(Settings.readAttribute("host_url","")), 
-        Dir(Settings.readAttribute("root_dir",""),[],[])
+        Dir(Settings.readAttribute("root_dir",""), None)
         )
 
     urlFuzzer = URL_Fuzzer(targetHost)
