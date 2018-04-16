@@ -20,6 +20,11 @@ class URL_Fuzzer:
 
     @staticmethod
     def __spiderworker__(content):
+        """
+        the function called by Util.Content_Worker to spider the given url
+        attribute content: the content to proceed
+        return: A proceeded content object
+        """
         rootURL = content.getURL() 
         newContent = Content(rootURL)
         newContent.setContentType(content.getContentType())
@@ -28,8 +33,18 @@ class URL_Fuzzer:
         if content.getStatus() in URL.GOOD_STATUS:
             if ('text' in content.getContentType() or 'script' in content.getContentType()):
                 refs = WebApi.grabRefs(content.getContent())
+                urls =[]
+                for ref in refs:
+                    try:
+                        #try to prettify url
+                        url = URL.prettifyURL(rootURL,ref)
+                        urls.append(url)
+                    except ValueError:
+                        continue
+
+                #returning extracted urls
                 newContent.setContentType("linklist")
-                newContent.setContent(refs)
+                newContent.setContent(urls)
         return newContent
 
 
@@ -63,24 +78,18 @@ class URL_Fuzzer:
                 if content.getContentType() != "linklist":
                     continue
                     
-                rootURL = content.getURL()
-                doneURLs.append(rootURL.getURL())
-                refs = content.getContent()
-                for ref in refs:
-                    try:
-                        url = URL.prettifyURL(self.host, rootURL,ref)
-                        path = url.getPath()
-                        if self.host.isExternal(url) or url.getURL() in doneURLs or len(path) == 0:
-                            continue
-                        doneURLs.append(url.getURL())
-                        length = content.getSize()
-                        self.host.getRootdir().appendPath(path, length)
-                        newContent = Content(url)
-                        newContent.setProcessor(URL_Fuzzer.__spiderworker__)
-                        toProceed.append(newContent)
-                    except ValueError:
+                urls = content.getContent()
+                for url in urls:
+                    path = url.getPath()
+                    if self.host.isExternal(url) or url.getURL() in doneURLs or len(path) == 0:
                         continue
-            
+                    doneURLs.append(url.getURL())
+                    length = content.getSize()
+                    self.host.getRootdir().appendPath(path, length)
+                    newContent = Content(url)
+                    newContent.setProcessor(URL_Fuzzer.__spiderworker__)
+                    toProceed.append(newContent)
+                
             #recusion done
             for a in range(0,len(toProceed)):
                 content = toProceed.pop()

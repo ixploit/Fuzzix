@@ -238,7 +238,7 @@ class URL:
         return proto + "://" + host + path
 
     @staticmethod
-    def prettifyURL(host, rootURL, url):
+    def prettifyURL(rootURL, url):
         """
         prettifies a given url
         attribute host: an instance of the root host
@@ -251,7 +251,7 @@ class URL:
             return URL(url)
 
         if url.startswith('//'):
-            url = url.replace('//', host.getURL().getProto() + "://", 1)
+            url = url.replace('//', rootURL.getProto() + "://", 1)
         
         if url.startswith('#'):
             url = rootURL.getURL() + url
