@@ -66,6 +66,7 @@ class __WebApi__:
         else:
             content.setContent(r.data) 
         return content
+        
     def grabRefs(self, content):
         """
         extracts most hyperlinks out of a given html document
@@ -132,6 +133,12 @@ class Content:
     def setContentType(self,contentType):
         self.contentType = contentType
 
+    def setProcessor(self,processor):
+        self.processor = processor
+    
+    def getProcessor(self):
+        return self.processor
+
 
 # object to tell the workers to terminate
 TERMINATE_WORKER = Content(URL("http://TERMINA.TE"))
@@ -159,8 +166,10 @@ class Content_Worker(threading.Thread):
                 return
 
             try:
+                func = content.getProcessor()
                 content = WebApi.receiveURL(content.getURL())
-                Content_Worker.done.put(content)
+                newContent = func(content)
+                Content_Worker.done.put(newContent)
             except:
-                pass
+                Logger.error("fatal error in childthread")
             Content_Worker.queue.task_done()

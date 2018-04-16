@@ -258,10 +258,10 @@ class URL:
 
         relativeURLRegex = r"^([\/|\.\/|\.\.\/]+.*)"
         relativeToRootURLRegex = r"^(.*[\/|\.\/|\.\.\/]+.*)"
-        if re.match(relativeURLRegex, url):
+        if re.match(relativeURLRegex, url) and not URL.isValidURL(url):
             url = URL.buildURL(rootURL.getProto(), rootURL.getHost(), rootURL.getPort(), rootURL.getPath() + '/' + url, '')
         else:
-            if re.match(relativeToRootURLRegex,url):
+            if re.match(relativeToRootURLRegex,url) and not URL.isValidURL(url):
                 url = URL.buildURL(rootURL.getProto(),rootURL.getHost(),rootURL.getPort(),rootURL.getPath() + '/' + url, '')
         try:
             return URL(url)

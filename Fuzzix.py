@@ -18,6 +18,21 @@ class URL_Fuzzer:
 
         Logger.info("fuzzing url", self.host.getURL())
 
+    @staticmethod
+    def __spiderworker__(content):
+        rootURL = content.getURL() 
+        newContent = Content(rootURL)
+        newContent.setContentType(content.getContentType())
+        newContent.setStatus(content.getStatus())
+        
+        if content.getStatus() in URL.GOOD_STATUS:
+            if ('text' in content.getContentType() or 'script' in content.getContentType()):
+                refs = WebApi.grabRefs(content.getContent())
+                newContent.setContentType("linklist")
+                newContent.setContent(refs)
+        return newContent
+
+
     def spider(self):
         """
         spider-routine of the URL_Fuzzer
@@ -25,41 +40,56 @@ class URL_Fuzzer:
         """
 
         Logger.info("Spidering URL", self.host.getURL())
-        rootcontent = WebApi.receiveURL(self.host.getURL())
+        
+        #starting on website-root
+        rootcontent = Content(self.host.getURL())
+        rootcontent.setProcessor(URL_Fuzzer.__spiderworker__)
         Content_Worker.queue.put(rootcontent)
-        doneURLs=[] #deadlock protection
-        for i in range(0, Settings.readAttribute("recursion_depth",0)):
-            Logger.info('Processing recursion', i, Content_Worker.queue.qsize(), 'tasks to be done')
-            Content_Worker.queue.join()
 
+        doneURLs=[] #deadlock protection
+        toProceed=[]
+        for i in range(0, Settings.readAttribute("recursion_depth",0)):
+            Logger.info('Processing recursion', i, Content_Worker.queue.qsize(), 'task(s) to be done')
+
+            #waiting for workers to finish
+            Content_Worker.queue.join()
+            
+            #processing finished resulsts
             while not Content_Worker.done.empty():
+                Logger.info(Content_Worker.done.qsize(),"result(s) to analyze")
                 content = Content_Worker.done.get()
                 Content_Worker.done.task_done()
-                if content.getStatus() in URL.GOOD_STATUS:
-                    rootURL = content.getURL() 
-                    if ('text' in content.getContentType() or 'script' in content.getContentType()):
-                        refs = WebApi.grabRefs(content.getContent())
-                        doneURLs.append(rootURL.getURL())
-                        for ref in refs:
-                            try:
-                                url = URL.prettifyURL(self.host, rootURL, ref)
-                                if self.host.isExternal(url) or url.getURL() in doneURLs:
-                                    continue
-                                newContent = Content(url)
-                                path = url.getPath()
-                                if len(path) == 0 or rootURL.getURL() == url.getURL():
-                                    continue
-                                length = content.getSize()
-                                self.host.getRootdir().appendPath(path, length)
-                                Content_Worker.queue.put(newContent)
-                            except ValueError as e:
-                                Logger.error(e)
-                else:
-                    Logger.wtf('received error ' + str(content.getStatus()) + ' for ' + content.getURL().getURL())
+                
+                if content.getContentType() != "linklist":
+                    continue
+                    
+                rootURL = content.getURL()
+                doneURLs.append(rootURL.getURL())
+                refs = content.getContent()
+                for ref in refs:
+                    try:
+                        url = URL.prettifyURL(self.host, rootURL,ref)
+                        path = url.getPath()
+                        if self.host.isExternal(url) or url.getURL() in doneURLs or len(path) == 0:
+                            continue
+                        length = content.getSize()
+                        self.host.getRootdir().appendPath(path, length)
+                        newContent = Content(url)
+                        newContent.setProcessor(URL_Fuzzer.__spiderworker__)
+                        toProceed.append(newContent)
+                    except ValueError as e:
+                        Logger.error(e)
+            
+            #recusion done
+            for a in range(0,len(toProceed)):
+                content = toProceed.pop()
+                Content_Worker.queue.put(content)
+
+            Logger.info("Recusion",i,"done")
+
+        #printing result    
         self.host.getRootdir().printDirs()
         Logger.info("spidering completed")
-
-    
 
     def fuzz(self):
         Logger.info("fuzzing URL", self.host.getURL())
