@@ -2,7 +2,7 @@ import argparse
 
 from Fuzzix.Data import Host, URL, Settings, Dir
 from Fuzzix.Util import WebApi, Content_Worker, Content, TERMINATE_WORKER
-from Fuzzix import Logger
+from Fuzzix import Logger, print_banner
 
 settings = None
 
@@ -72,6 +72,7 @@ class URL_Fuzzer:
                         path = url.getPath()
                         if self.host.isExternal(url) or url.getURL() in doneURLs or len(path) == 0:
                             continue
+                        doneURLs.append(url.getURL())
                         length = content.getSize()
                         self.host.getRootdir().appendPath(path, length)
                         newContent = Content(url)
@@ -190,7 +191,8 @@ def shutdown():
 
 
 if __name__ == "__main__":
-
+    print_banner()
+    
     try:
         startup()
         startWorkers(Settings.readAttribute("threads",4))
