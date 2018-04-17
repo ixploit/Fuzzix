@@ -171,7 +171,7 @@ class Content_Worker(threading.Thread):
                 newContent = func(content)
                 Content_Worker.done.put(newContent)
             except BaseException as e:
-                Logger.error('catched exception ' + e)
+                Logger.error('catched exception ',e,'in child-thread')
             except:
                 Logger.error("fatal error in childthread")
             Content_Worker.queue.task_done()
