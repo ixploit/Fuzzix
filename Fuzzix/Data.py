@@ -15,7 +15,7 @@ class File:
         return self.name
 
 
-NONE_FILE = File("", 0)
+NONE_FILE = File("", -1)
 
 
 class Dir:
@@ -23,7 +23,7 @@ class Dir:
 
     def __init__(self, dirName, rootDir):
         """
-        created a new Dir
+        creates a new Dir
         attribute dirName: the name of the new dir
         attribute rootDir: the root directory of the dir, can be None
         return: None
@@ -37,7 +37,7 @@ class Dir:
         """
         checks, weither a file with this name is already known
         attribute name: the name of the file to check
-        return: true if the file is already known, otherwise False
+        return: True if the file is already known, otherwise False
         """
         for file in self.spottedFiles:
             if file.getName() == name:
@@ -90,6 +90,7 @@ class Dir:
         appends the spotted dirs and files to the dir
         attribute path: a path of type str containing dirs and probably a file, must already be extracted out of the URL and start with a '/'
         attribute contentLength: the length of the content, that has been retreived on the remote host with the given path
+        return: None
         """
         startIndex = path.find('/')
         if startIndex == -1:
