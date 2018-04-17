@@ -1,6 +1,8 @@
 
 #logger for this file
 from coloredlogger import ColoredLogger
+import urllib.parse
+
 data_logger = ColoredLogger(name="Data")
 
 

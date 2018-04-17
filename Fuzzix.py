@@ -4,8 +4,6 @@ from Fuzzix.Data import Host, URL, Settings, Dir
 from Fuzzix.Util import WebApi, Content_Worker, Content, TERMINATE_WORKER
 from Fuzzix import Logger, print_banner
 
-settings = None
-
 
 class URL_Fuzzer:
     """class to perform spidering and fuzzing tasks"""
@@ -53,20 +51,24 @@ class URL_Fuzzer:
         spider-routine of the URL_Fuzzer
         return: None
         """
-
         Logger.info("Spidering URL", self.host.getURL())
-        
+        toProceed=[] #buffer for open tasks
+        doneURLs=[] #deadlock protection
+
         #starting on website-root
         rootcontent = Content(self.host.getURL())
         rootcontent.setProcessor(URL_Fuzzer.__spiderworker__)
-        Content_Worker.queue.put(rootcontent)
+        toProceed.append(rootcontent)
 
-        doneURLs=[] #deadlock protection
-        toProceed=[]
         for i in range(0, Settings.readAttribute("recursion_depth",0)):
-            Logger.info('Processing recursion', i, Content_Worker.queue.qsize(), 'task(s) to be done')
-
+            
+            #writing buffer in queue
+            for a in range(0,len(toProceed)):
+                content = toProceed.pop()
+                Content_Worker.queue.put(content)
+            
             #waiting for workers to finish
+            Logger.info('Processing recursion', i, Content_Worker.queue.qsize(), 'task(s) to be done')
             Content_Worker.queue.join()
             
             #processing finished resulsts
@@ -89,13 +91,6 @@ class URL_Fuzzer:
                     newContent = Content(url)
                     newContent.setProcessor(URL_Fuzzer.__spiderworker__)
                     toProceed.append(newContent)
-                
-            #recusion done
-            for a in range(0,len(toProceed)):
-                content = toProceed.pop()
-                Content_Worker.queue.put(content)
-
-            Logger.info("Recusion",i,"done")
 
         #printing result    
         print(self.host.getRootdir())
@@ -204,7 +199,7 @@ if __name__ == "__main__":
 
     try:
         startup()
-        startWorkers(Settings.readAttribute("threads",4))
+        startWorkers(Settings.readAttribute("threads",0))
     except ValueError as e:
         Logger.error(e)
         exit()
