@@ -1,7 +1,6 @@
 
 #logger for this file
 from coloredlogger import ColoredLogger
-import urllib.parse
 
 data_logger = ColoredLogger(name="Data")
 
@@ -143,11 +142,15 @@ class Dir:
 class __Protocol__:
     supportedProtocols = []
 
-    def __init__(self, name):
+    def __init__(self, name, defaultPort):
         self.name = name
+        self.defaultPort = defaultPort
 
     def getName(self):
         return self.name
+    
+    def getDefaultPort(self):
+        return self.defaultPort
 
     def __str__(self):
         return self.getName()
@@ -162,17 +165,24 @@ class __Protocol__:
             raise ValueError("unsopported protocol")
 
 
-HTTPS = __Protocol__("HTTPS")
-HTTP = __Protocol__("HTTP")
+    @staticmethod
+    def isValidProtocol(name):
+        try:
+            __Protocol__.getProtocol(name)
+            return True
+        except ValueError:
+            return False
+
+HTTPS = __Protocol__("HTTPS",443)
+HTTP = __Protocol__("HTTP",80)
 
 import re
-
+from urllib.parse import urlparse, urljoin, urlunparse
 
 class URL:
     """stores some general information about the used URL"""
 
     GOOD_STATUS = [200, 203, 302, 304, 401, 402, 403, 405, 407, 500, 502, 503]
-    urlRegex = r"(http[s]?)://((?:[a-zA-Z]|[0-9]|[$\-_\.&+])+)((?:[a-zA-Z]|[0-9]|[$\?=\-_\.\/&+#])*)(?::((?:[0-9]){1,5})){0,1}"
 
     def __init__(self, url):
         """
@@ -181,30 +191,38 @@ class URL:
         return: None
         raises: ValueError if no valid URL is passed
         """
-        if re.match(URL.urlRegex, url):
+        if URL.isValidURL(url):
             # url is valid -> parsing
 
-            matches = re.findall(URL.urlRegex, url)[0]
-            self.proto = matches[0]
+            urlparts = urlparse(url)
 
-            if self.proto.lower() == HTTP.getName().lower():
-                self.port = 80
-            elif self.proto.lower() == HTTPS.getName().lower():
-                self.port = 443
+            #Protocol
+            proto = urlparts.scheme
+            if __Protocol__.isValidProtocol(proto):
+                self.proto = proto
             else:
-                raise ValueError('unsopported protocol given!')
+                # url is invalid
+                raise ValueError("the given url " + url + " is not valid!")
 
-            self.host = matches[1]
-            self.path = matches[2]
-            if len(matches[3]) >= 1:
-                self.port = matches[3]
+            #host and port
+            netloc = urlparts.netloc
+            if ':' in netloc:
+                self.host,self.port = netloc.split(':')
+            else:
+                self.host = netloc
+                self.port = __Protocol__.getProtocol(self.proto).getDefaultPort()
+            
+            #others
+            self.path = urlparts.path
+            self.query = urlparts.query
+            self.params = urlparts.params
+            self.fragments = urlparts.fragment
+            self.username = urlparts.username
+            self.password = urlparts.password
 
         else:
             # url is invalid
             raise ValueError("the given url " + url + " is not valid!")
-
-    def getURL(self):
-        return URL.buildURL(self.getProto(), self.getHost(), self.getPort(), self.getPath(), "")
 
     def getPort(self):
         return self.port
@@ -217,50 +235,54 @@ class URL:
 
     def getPath(self):
         return self.path
+    
+    def getParams(self):
+        return self.params
+
+    def getQuery(self):
+        return self.query
+
+    def getFragments(self):
+        return self.fragments
+    
+    def getUsername(self):
+        return self.username
+    
+    def getPassword(self):
+        return self.password
 
     def __str__(self, **kwargs):
         return self.getURL()
+    
+    def getURL(self):
+        return URL.buildURL(self.getProto(), self.getHost(), self.getPort(), self.getPath(), self.getParams(),self.getQuery(),self.getFragments())
 
     @staticmethod
-    def buildURL(proto, host, port, dir, file):
+    def buildPath(dir,file):
+        """
+        builds a path out of the given dir and the given file
+        attribute dir: the specified dir as str
+        attribute file: the specified file as str
+        """
+        path = dir + '/' + file
+        path = path.replace('//','/')
+        return path
+
+    @staticmethod
+    def buildURL(proto, host, port, path, params, query, fragments):
         """
         builds an URL out of the given parameters
         attribute proto: the used protocol as str
         attribute host: the target host as str
         attribute port: the target port as int -> warning, currently not supported!
-        attribute dir: the target dir as str
+        attribute dir: the target dir as str, must start with a leading /
         attribute file: the target file as str
         return: the crafted URL of type str
         """
-        if dir.startswith('/'):
-            dir = dir[1:]
-        if dir.endswith('/'):
-            dir = dir[:-1]
-        file = file.replace('/','')
-        
-        path = ''
-        if (dir+file).endswith('/'):
-            if not file:
-                path = '/' + dir[:-1]
-            else:
-                if not dir:
-                    path = '/' + file[:-1]
-                else:
-                    path = '/' + dir + '/' + file[:-1]
-        else:
-            if not dir:
-                if not file:
-                    path = ''
-                else:
-                    path = '/' + file
-            else:
-                if not file:
-                    path = '/' + dir
-                else:
-                    path = '/' + dir + '/' + file
-        path = path.replace('//','/')
-        
-        return proto + "://" + host + path
+        netloc = host + ':' + str(port)
+        urlparts = [proto,netloc,path,params,query,fragments]
+        url = urlunparse(urlparts)
+        return url
 
     @staticmethod
     def prettifyURL(rootURL, url):
@@ -274,24 +296,14 @@ class URL:
         #check weither URL is already absolute and valid
         if URL.isValidURL(url):
             return URL(url)
-
-        if url.startswith('//'):
-            url = url.replace('//', rootURL.getProto() + "://", 1)
         
-        if url.startswith('#'):
-            url = rootURL.getURL() + url
-
-        relativeURLRegex = r"^([\/|\.\/|\.\.\/]+.*)"
-        relativeToRootURLRegex = r"^(.*[\/|\.\/|\.\.\/]+.*)"
-        if re.match(relativeURLRegex, url) and not URL.isValidURL(url):
-            url = URL.buildURL(rootURL.getProto(), rootURL.getHost(), rootURL.getPort(), rootURL.getPath() + '/' + url, '')
-        else:
-            if re.match(relativeToRootURLRegex,url) and not URL.isValidURL(url):
-                url = URL.buildURL(rootURL.getProto(),rootURL.getHost(),rootURL.getPort(),rootURL.getPath() + '/' + url, '')
+        #guess it's a relative URL
+        absURL = urljoin(rootURL.getURL(),url)
+        
         try:
-            return URL(url)
-        except ValueError:
-            raise ValueError('couldn\'t prettify URL ' + url + ' found in ' + rootURL.getURL() + ' it is not valid')
+            return URL(absURL)
+        except ValueError as e:
+            raise ValueError('couldn\'t prettify URL ' + url)
 
     @staticmethod
     def isValidURL(url):
@@ -300,7 +312,11 @@ class URL:
         attribute url: the url to check as str
         return: True if URL is valid, otherwise False
         """
-        return re.match(URL.urlRegex,url)
+        urlparts = urlparse(url)
+        proto = urlparts.scheme
+        if urlparts.netloc and urlparts.scheme and __Protocol__.isValidProtocol(proto):
+            return True
+        return False
 
 class Host:
     """represents a webhost"""
