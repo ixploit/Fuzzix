@@ -11,7 +11,7 @@
             "program": "${file}",
             "args": [
                 "url",
-                "https://ixploit.de",
+                "http://v-i-a.co",
                 "-s",
                 "-f",
                 "-r",

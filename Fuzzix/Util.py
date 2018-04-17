@@ -170,6 +170,8 @@ class Content_Worker(threading.Thread):
                 content = WebApi.receiveURL(content.getURL())
                 newContent = func(content)
                 Content_Worker.done.put(newContent)
+            except BaseException as e:
+                Logger.error('catched exception ' + e)
             except:
                 Logger.error("fatal error in childthread")
             Content_Worker.queue.task_done()
