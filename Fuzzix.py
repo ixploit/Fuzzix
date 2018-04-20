@@ -96,6 +96,15 @@ class URL_Fuzzer:
         print(self.host.getRootdir())
         Logger.info("spidering completed")
 
+    @staticmethod
+    def __fuzzworker__(content):
+        """
+        the function called by Content_Worker to proceed the content-Object
+        attribute content: the content to proceed
+        return: the proceeded content
+        """
+
+
     def fuzz(self):
         Logger.info("fuzzing URL", self.host.getURL())
         
