@@ -72,7 +72,6 @@ class URL_Fuzzer:
             Content_Worker.queue.join()
             
             #processing finished resulsts
-            Logger.info(Content_Worker.done.qsize(),"result(s) to analyze")
             while not Content_Worker.done.empty():
                 content = Content_Worker.done.get()
                 Content_Worker.done.task_done()
@@ -104,10 +103,40 @@ class URL_Fuzzer:
         return: the proceeded content
         """
 
+    def __scan_for_dirs(dir):
+        """
+        scans for hidden dirs in the given dir and appends them to the dir
+        attribute dir: the root dir for the scan
+        return: the updated dir
+        """
+    
+    def __scan_for_files(dir):
+        """
+        scans for hidden files in the given dir and appends them to the dir
+        attribute dir: the root dir for the scan
+        return: the updated dir
+        """
+
+    def __scan_for_mutations(dir):
+        """
+        scan for mutations of known files in the given dir and appends any hits to the given dir
+        attribute dir: the root dir for the scan
+        return: the updated dir
+        """
+    
+    def __scan__dir(dir):
+        """
+        runs all scans over a given dir recursively and appends any hits to the root-dir
+        attribute dir: the root dir for the scan
+        return: the updated dir
+        """
 
     def fuzz(self):
         Logger.info("fuzzing URL", self.host.getURL())
-        
+        recursion_depth = Settings.readAttribute("recursion_depth",0)
+        for i in range(0, recursion_depth):
+            Logger.info("Processing recursion " + i)
+
         
         Logger.info("fuzzing completed")
 
