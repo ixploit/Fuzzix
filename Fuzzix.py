@@ -135,7 +135,7 @@ class URL_Fuzzer:
         Logger.info("fuzzing URL", self.host.getURL())
         recursion_depth = Settings.readAttribute("recursion_depth",0)
         for i in range(0, recursion_depth):
-            Logger.info("Processing recursion " + i)
+            Logger.info("Processing recursion",i)
 
         
         Logger.info("fuzzing completed")
