@@ -1,4 +1,4 @@
-* english version below *
+*english version below*
 
 # Vereinbarung über Verhaltenskodex für Mitwirkende
 
