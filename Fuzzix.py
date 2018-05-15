@@ -1,6 +1,6 @@
 import argparse
 
-from Fuzzix.Data import Host, URL, Settings, Dir
+from Fuzzix.Data import Host, URL, Settings, Dir, Wordlist
 from Fuzzix.Util import WebApi, Content_Worker, Content, TERMINATE_WORKER
 from Fuzzix import Logger, print_banner
 
@@ -15,6 +15,17 @@ class URL_Fuzzer:
             raise ValueError("wrong type for attribute host!")
 
         Logger.info("fuzzing url", self.host.getURL())
+
+
+    def __init_wordlists__(self):
+        """
+        reads the path of the wordlists out of the Settings and reads the wordlists into memory
+        return: None
+        """
+        self.DirectoriesWordlist = Wordlist("directories", Settings.readAttribute("WORDLISTS/directories",""))
+        self.ExtensionsWordlist  = Wordlist("extension", Settings.readAttribute("WORDLISTS/extensions",""))
+        self.FilesWordlist       = Wordlist("files", Settings.readAttribute("WORDLISTS/files",""))
+        self.mutationsWordlist   = Wordlist("mutations", Settings.readAttribute("WORDLISTS/mutations",""))
 
     @staticmethod
     def __spiderworker__(content):
@@ -180,6 +191,8 @@ def startup():
         Settings.writeAttribute("verify_cert",verify_cert)
         Settings.writeAttribute("threads",threads)
         Settings.writeAttribute("recursion_depth",recursion_depth)
+
+        #read config-file
         Settings.readConfig("config/config.ini")
 
         WebApi.setProtocol(URL(Settings.readAttribute("host_url","")).getProto())

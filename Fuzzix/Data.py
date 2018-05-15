@@ -5,6 +5,8 @@ from coloredlogger import ColoredLogger
 data_logger = ColoredLogger(name="Data")
 
 
+
+
 import os.path
 class Wordlist:
     """represents a wordlist"""
@@ -16,7 +18,6 @@ class Wordlist:
         attribute path: the path to the wordlist, it is an error if the path isn't poiniting to an existing file
         return: None
         """
-        
         #attribute check        
         if type(path) is not str or type(name) is not str:
             raise ValueError("expected type str for attributes name and path")
