@@ -5,16 +5,21 @@ from Fuzzix.Util import WebApi, Content_Worker, Content, TERMINATE_WORKER
 from Fuzzix import Logger, print_banner
 
 
-class URL_Fuzzer:
+class UrlFuzzer:
     """class to perform spidering and fuzzing tasks"""
 
     def __init__(self, host):
-        if type(host) is Host:
+        if isinstance(host, Host):
             self.host = host
         else:
             raise ValueError("wrong type for attribute host!")
 
-        Logger.info("fuzzing url", self.host.getURL())
+        #defining and initializing wordlists
+        self.directories_wordlist = []
+        self.extensions_wordlist = []
+        self.files_wordlist = []
+        self.mutations_wordlist = []
+        self.__init_wordlists__()
 
     def __init_wordlists__(self):
         """
@@ -24,15 +29,15 @@ class URL_Fuzzer:
         self.directories_wordlist = Wordlist("directories",
                                              Settings.readAttribute(
                                                  "WORDLISTS/directories", ""))
-        self.ExtensionsWordlist = Wordlist("extension",
+        self.extensions_wordlist = Wordlist("extension",
+                                            Settings.readAttribute(
+                                                "WORDLISTS/extensions", ""))
+        self.files_wordlist = Wordlist("files",
+                                       Settings.readAttribute(
+                                           "WORDLISTS/files", ""))
+        self.mutations_wordlist = Wordlist("mutations",
                                            Settings.readAttribute(
-                                               "WORDLISTS/extensions", ""))
-        self.FilesWordlist = Wordlist("files",
-                                      Settings.readAttribute(
-                                          "WORDLISTS/files", ""))
-        self.mutationsWordlist = Wordlist("mutations",
-                                          Settings.readAttribute(
-                                              "WORDLISTS/mutations", ""))
+                                               "WORDLISTS/mutations", ""))
 
     @staticmethod
     def __spiderworker__(content):
@@ -75,7 +80,7 @@ class URL_Fuzzer:
 
         #starting on website-root
         rootcontent = Content(self.host.getURL())
-        rootcontent.setProcessor(URL_Fuzzer.__spiderworker__)
+        rootcontent.setProcessor(UrlFuzzer.__spiderworker__)
         toProceed.append(rootcontent)
 
         for i in range(0, Settings.readAttribute("recursion_depth", 0)):
@@ -108,7 +113,7 @@ class URL_Fuzzer:
                     length = content.getSize()
                     self.host.getRootdir().appendPath(path, length)
                     newContent = Content(url)
-                    newContent.setProcessor(URL_Fuzzer.__spiderworker__)
+                    newContent.setProcessor(UrlFuzzer.__spiderworker__)
                     toProceed.append(newContent)
 
         #printing result
@@ -222,11 +227,11 @@ def startup():
 
         WebApi.setProtocol(
             URL(Settings.readAttribute("host_url", "")).getProto())
-    except ValueError as e:
-        raise e
+    except ValueError as error:
+        raise error
 
 
-def startWorkers(amount=4):
+def start_workers(amount=4):
     """
     starts the workers
     attribute amount: the amount of workers to start
@@ -241,17 +246,17 @@ def startWorkers(amount=4):
     Logger.info("Threads started")
 
 
-def stopWorkers():
+def stop_workers():
     """
     stops the running workers
     return: None
     """
 
     Logger.info("stopping workers")
-    for w in Content_Worker.workers:
+    for _worker in Content_Worker.workers:
         Content_Worker.queue.put(TERMINATE_WORKER)
-    for w in Content_Worker.workers:
-        w.join()
+    for worker in Content_Worker.workers:
+        worker.join()
 
     Logger.info("stopped workers")
 
@@ -263,7 +268,7 @@ def shutdown():
     """
 
     try:
-        stopWorkers()
+        stop_workers()
     except:
         Logger.error("failed to stop threads!")
 
@@ -276,21 +281,21 @@ if __name__ == "__main__":
 
     try:
         startup()
-        startWorkers(Settings.readAttribute("threads", 0))
+        start_workers(Settings.readAttribute("threads", 0))
     except ValueError as e:
         Logger.error(e)
         exit()
 
-    targetHost = Host(
+    TARGET_HOST = Host(
         URL(Settings.readAttribute("host_url", "")),
         Dir(Settings.readAttribute("root_dir", ""), None))
 
-    urlFuzzer = URL_Fuzzer(targetHost)
+    URL_FUZZER = UrlFuzzer(TARGET_HOST)
 
     if Settings.readAttribute("spider", False):
-        urlFuzzer.spider()
+        URL_FUZZER.spider()
 
     if Settings.readAttribute("fuzz", False):
-        urlFuzzer.fuzz()
+        URL_FUZZER.fuzz()
 
     shutdown()
