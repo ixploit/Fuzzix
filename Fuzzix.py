@@ -103,34 +103,34 @@ class URL_Fuzzer:
         return: the proceeded content
         """
 
-    def __scan_for_dirs(dir):
+    def __scan_for_dirs__(dir):
         """
         scans for hidden dirs in the given dir and appends them to the dir
         attribute dir: the root dir for the scan
         return: the updated dir
         """
     
-    def __scan_for_files(dir):
+    def __scan_for_files__(dir):
         """
         scans for hidden files in the given dir and appends them to the dir
         attribute dir: the root dir for the scan
         return: the updated dir
         """
 
-    def __scan_for_mutations(dir):
+    def __scan_for_mutations__(dir):
         """
         scan for mutations of known files in the given dir and appends any hits to the given dir
         attribute dir: the root dir for the scan
         return: the updated dir
         """
     
-    def __scan__dir(dir):
+    def __scan_dir__(dir):
         """
         runs all scans over a given dir recursively and appends any hits to the root-dir
         attribute dir: the root dir for the scan
         return: the updated dir
         """
-
+        
     def fuzz(self):
         Logger.info("fuzzing URL", self.host.getURL())
         recursion_depth = Settings.readAttribute("recursion_depth",0)

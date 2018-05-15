@@ -5,6 +5,46 @@ from coloredlogger import ColoredLogger
 data_logger = ColoredLogger(name="Data")
 
 
+import os.path
+class Wordlist:
+    """represents a wordlist"""
+
+    def __init__(self,name,path):
+        """
+        initializes a new wordlist
+        attribute name: the name of the wordlist
+        attribute path: the path to the wordlist, it is an error if the path isn't poiniting to an existing file
+        return: None
+        """
+        
+        #attribute check        
+        if type(path) is not str or type(name) is not str:
+            raise ValueError("expected type str for attributes name and path")
+        if not os.path.isfile(path):
+            raise ValueError("there is no file at " + path)
+
+        self.name = name
+        self.path = path
+        self.content = []
+
+        #read the wordlist into memory
+        self.__read_from_file__(path)
+    
+    def __read_from_file__(self,path):
+        """
+        reads the content of a file into the memory; clears any old data.
+        attribute path: the path of the wordlist as str
+        return: None
+        """
+        self.content.clear()
+        with open(path) as f:
+            lines = f.readlines()
+            self.content.extend(lines)
+
+    def get_content(self):
+        return self.content
+
+
 class File:
     """stores some general information about a spotted file"""
 
