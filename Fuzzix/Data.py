@@ -1,24 +1,22 @@
-
 #logger for this file
 from coloredlogger import ColoredLogger
 
 data_logger = ColoredLogger(name="Data")
 
-
-
-
 import os.path
+
+
 class Wordlist:
     """represents a wordlist"""
 
-    def __init__(self,name,path):
+    def __init__(self, name, path):
         """
         initializes a new wordlist
         attribute name: the name of the wordlist
         attribute path: the path to the wordlist, it is an error if the path isn't poiniting to an existing file
         return: None
         """
-        #attribute check        
+        #attribute check
         if type(path) is not str or type(name) is not str:
             raise ValueError("expected type str for attributes name and path")
         if not os.path.isfile(path):
@@ -30,8 +28,8 @@ class Wordlist:
 
         #read the wordlist into memory
         self.__read_from_file__(path)
-    
-    def __read_from_file__(self,path):
+
+    def __read_from_file__(self, path):
         """
         reads the content of a file into the memory; clears any old data.
         attribute path: the path of the wordlist as str
@@ -120,7 +118,7 @@ class Dir:
         if alKnwonDir is not None:
             return alKnwonDir
 
-        dir = Dir(name,self)
+        dir = Dir(name, self)
         self.childDirs.append(dir)
         return dir
 
@@ -158,7 +156,7 @@ class Dir:
                     return
             if pathName.startswith('/./'):
                 pathName = path[3:]
-                self.appendPath(pathName,contentLength)
+                self.appendPath(pathName, contentLength)
 
             # continue recursively
             dir = self.__appendDir__(pathName)
@@ -172,13 +170,12 @@ class Dir:
 
         for dir in self.childDirs:
             ostr = ostr + dir.__printDirs__(path)
-        
+
         return ostr
 
     def __str__(self):
         return self.__printDirs__('')
-       
-        
+
 
 class __Protocol__:
     supportedProtocols = []
@@ -189,7 +186,7 @@ class __Protocol__:
 
     def getName(self):
         return self.name
-    
+
     def getDefaultPort(self):
         return self.defaultPort
 
@@ -205,7 +202,6 @@ class __Protocol__:
         else:
             raise ValueError("unsopported protocol")
 
-
     @staticmethod
     def isValidProtocol(name):
         try:
@@ -214,11 +210,13 @@ class __Protocol__:
         except ValueError:
             return False
 
-HTTPS = __Protocol__("HTTPS",443)
-HTTP = __Protocol__("HTTP",80)
+
+HTTPS = __Protocol__("HTTPS", 443)
+HTTP = __Protocol__("HTTP", 80)
 
 import re
 from urllib.parse import urlparse, urljoin, urlunparse
+
 
 class URL:
     """stores some general information about the used URL"""
@@ -248,11 +246,12 @@ class URL:
             #host and port
             netloc = urlparts.netloc
             if ':' in netloc:
-                self.host,self.port = netloc.split(':')
+                self.host, self.port = netloc.split(':')
             else:
                 self.host = netloc
-                self.port = __Protocol__.getProtocol(self.proto).getDefaultPort()
-            
+                self.port = __Protocol__.getProtocol(
+                    self.proto).getDefaultPort()
+
             #others
             self.path = urlparts.path
             self.query = urlparts.query
@@ -276,7 +275,7 @@ class URL:
 
     def getPath(self):
         return self.path
-    
+
     def getParams(self):
         return self.params
 
@@ -285,28 +284,30 @@ class URL:
 
     def getFragments(self):
         return self.fragments
-    
+
     def getUsername(self):
         return self.username
-    
+
     def getPassword(self):
         return self.password
 
     def __str__(self, **kwargs):
         return self.getURL()
-    
+
     def getURL(self):
-        return URL.buildURL(self.getProto(), self.getHost(), self.getPort(), self.getPath(), self.getParams(),self.getQuery(),self.getFragments())
+        return URL.buildURL(self.getProto(), self.getHost(), self.getPort(),
+                            self.getPath(), self.getParams(), self.getQuery(),
+                            self.getFragments())
 
     @staticmethod
-    def buildPath(dir,file):
+    def buildPath(dir, file):
         """
         builds a path out of the given dir and the given file
         attribute dir: the specified dir as str
         attribute file: the specified file as str
         """
         path = dir + '/' + file
-        path = path.replace('//','/')
+        path = path.replace('//', '/')
         return path
 
     @staticmethod
@@ -321,7 +322,7 @@ class URL:
         return: the crafted URL of type str
         """
         netloc = host + ':' + str(port)
-        urlparts = [proto,netloc,path,params,query,fragments]
+        urlparts = [proto, netloc, path, params, query, fragments]
         url = urlunparse(urlparts)
         return url
 
@@ -337,10 +338,10 @@ class URL:
         #check weither URL is already absolute and valid
         if URL.isValidURL(url):
             return URL(url)
-        
+
         #guess it's a relative URL
-        absURL = urljoin(rootURL.getURL(),url)
-        
+        absURL = urljoin(rootURL.getURL(), url)
+
         try:
             return URL(absURL)
         except ValueError as e:
@@ -355,9 +356,11 @@ class URL:
         """
         urlparts = urlparse(url)
         proto = urlparts.scheme
-        if urlparts.netloc and urlparts.scheme and __Protocol__.isValidProtocol(proto):
+        if urlparts.netloc and urlparts.scheme and __Protocol__.isValidProtocol(
+                proto):
             return True
         return False
+
 
 class Host:
     """represents a webhost"""
@@ -393,16 +396,17 @@ class Host:
         else:
             return True
 
+
 import configparser
+
 
 class __Settings__:
     """a class to store settings"""
 
     def __init__(self):
         self.config = {}
-        
 
-    def readConfig(self,path):
+    def readConfig(self, path):
         """
         reads the config file located on the given locaton using configparser
         attribute path: the path to the config file as str
@@ -415,10 +419,9 @@ class __Settings__:
             raise ValueError("given config empty or not existend")
         for section in configFile.sections():
             for key in configFile[section]:
-                self.config[section + "/" + key]=configFile[section][key]
-        
+                self.config[section + "/" + key] = configFile[section][key]
 
-    def writeAttribute(self,key,value):
+    def writeAttribute(self, key, value):
         """
         writes an given attribute to the config file
         attribute key: the key for the attribute
@@ -427,7 +430,7 @@ class __Settings__:
         """
         self.config[key] = value
 
-    def readAttribute(self,key,default):
+    def readAttribute(self, key, default):
         """
         reads an attribute from the config
         attribute key: the key to read
@@ -438,10 +441,14 @@ class __Settings__:
             return self.config[key]
         else:
             #logging waring
-            data_logger.wtf("key " + key + " couldn't be found, returning default value " + default + " instead")
+            data_logger.wtf(
+                "key " + key + " couldn't be found, returning default value " +
+                default + " instead")
             return default
-    
+
     def printConfig(self):
         for key in self.config:
             print(key + " : " + self.config[key])
+
+
 Settings = __Settings__()
