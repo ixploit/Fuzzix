@@ -1,5 +1,5 @@
 # URL-Fuzzer
-a simple python written url fuzzer
+a simple python written url fuzzer [![Build Status](https://travis-ci.org/ixploit/Fuzzix.svg?branch=master)](https://travis-ci.org/ixploit/Fuzzix)
 
 # Warning
 this repo is under active development and not meant to be working in any way!
