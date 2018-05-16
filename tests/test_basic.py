@@ -2,7 +2,7 @@
 runs basic tests
 """
 import unittest
-from tests.context import fuzzix
+from .context import fuzzix
 
 
 class FuzzixTest(unittest.TestCase):
