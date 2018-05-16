@@ -17,7 +17,7 @@ class Wordlist:
         return: None
         """
         #attribute check
-        if type(path) is not str or type(name) is not str:
+        if not isinstance(name,str) or not isinstance(path, str):
             raise ValueError("expected type str for attributes name and path")
         if not os.path.isfile(path):
             raise ValueError("there is no file at " + path)
@@ -41,8 +41,16 @@ class Wordlist:
             self.content.extend(lines)
 
     def get_content(self):
+        """
+        returns the content of the wordlist
+        """
         return self.content
 
+    def get_name(self):
+        """
+        returns the name of the wordlist
+        """
+        return self.name
 
 class File:
     """stores some general information about a spotted file"""
