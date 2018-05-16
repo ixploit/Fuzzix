@@ -2,8 +2,6 @@
 runs basic tests
 """
 import unittest
-import sys
-sys.path.append("..")  # Adds higher directory to python modules path.
 from Fuzzix import api
 
 
