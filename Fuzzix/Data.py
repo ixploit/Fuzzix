@@ -17,7 +17,7 @@ class Wordlist:
         return: None
         """
         #attribute check
-        if not isinstance(name,str) or not isinstance(path, str):
+        if not isinstance(name, str) or not isinstance(path, str):
             raise ValueError("expected type str for attributes name and path")
         if not os.path.isfile(path):
             raise ValueError("there is no file at " + path)
@@ -43,14 +43,17 @@ class Wordlist:
     def get_content(self):
         """
         returns the content of the wordlist
+        return: The content of the wordlist
         """
         return self.content
 
     def get_name(self):
         """
         returns the name of the wordlist
+        return: Name of the wordlist
         """
         return self.name
+
 
 class File:
     """stores some general information about a spotted file"""
@@ -59,8 +62,19 @@ class File:
         self.name = name
         self.size = size
 
-    def getName(self):
+    def get_name(self):
+        """
+        returns the name of the file
+        return: Name of the file
+        """
         return self.name
+
+    def get_size(self):
+        """
+        returns the size of the file
+        return: The size of the file
+        """
+        return self.size
 
 
 NONE_FILE = File("", -1)
@@ -449,9 +463,9 @@ class __Settings__:
             return self.config[key]
         else:
             #logging waring
-            data_logger.wtf(
-                "key " + key + " couldn't be found, returning default value " +
-                default + " instead")
+            data_logger.wtf("key " + key +
+                            " couldn't be found, returning default value " +
+                            default + " instead")
             return default
 
     def printConfig(self):

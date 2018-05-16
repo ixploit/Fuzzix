@@ -1,8 +1,15 @@
+"""
+providing high-level functions for Fuzzix.py
+"""
+
 from coloredlogger import ColoredLogger
 Logger = ColoredLogger(name="MAIN")
 
 
 def print_banner():
+    """
+    prints the applications' banner
+    """
     banner = """
                           .-') _    .-') _         ) (`-.      
                          (  OO) )  (  OO) )         ( OO ).    
