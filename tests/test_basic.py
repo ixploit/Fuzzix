@@ -4,7 +4,7 @@ runs basic tests
 import unittest
 import sys
 sys.path.append("..")  # Adds higher directory to python modules path.
-from Fuzzix import fuzzix
+from Fuzzix import api
 
 
 class FuzzixTest(unittest.TestCase):
@@ -16,7 +16,7 @@ class FuzzixTest(unittest.TestCase):
         return: None
         """
         try:
-            fuzzix.print_banner()
+            api.print_banner()
         except:
             self.fail('print_banner() raised an exception')
 

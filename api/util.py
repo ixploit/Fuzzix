@@ -6,8 +6,8 @@ from queue import Queue
 
 import urllib3
 from bs4 import BeautifulSoup
-from fuzzix import LOGGER
-from fuzzix.data import URL, HTTP, Host, Dir, File
+from api import LOGGER
+from api.data import URL, HTTP, Host, Dir, File
 urllib3.disable_warnings()
 
 

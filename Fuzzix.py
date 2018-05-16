@@ -1,8 +1,8 @@
 import argparse
 
-from fuzzix.data import Host, URL, Settings, Dir, Wordlist
-from fuzzix.util import WebApi, ContentWorker, Content, TERMINATE_WORKER
-from fuzzix import LOGGER, print_banner
+from api.data import Host, URL, Settings, Dir, Wordlist
+from api.util import WebApi, ContentWorker, Content, TERMINATE_WORKER
+from api import LOGGER, print_banner
 
 
 class UrlFuzzer:

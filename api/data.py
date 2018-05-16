@@ -1,5 +1,5 @@
 import os.path
-from fuzzix import LOGGER
+from api import LOGGER
 
 
 class Wordlist:
