@@ -1,9 +1,5 @@
-#logger for this file
-from coloredlogger import ColoredLogger
-
-data_logger = ColoredLogger(name="Data")
-
 import os.path
+from fuzzix import LOGGER
 
 
 class Wordlist:
@@ -170,7 +166,7 @@ class Dir:
 
             if pathName.startswith('/..'):
                 if self.rootDir is None:
-                    data_logger.wtf('website browsing out of webroot')
+                    LOGGER.wtf('website browsing out of webroot')
                     return
                 else:
                     pathName = path[3:]
@@ -366,7 +362,7 @@ class URL:
 
         try:
             return URL(absURL)
-        except ValueError as e:
+        except ValueError as _e:
             raise ValueError('couldn\'t prettify URL ' + url)
 
     @staticmethod
@@ -463,12 +459,16 @@ class __Settings__:
             return self.config[key]
         else:
             #logging waring
-            data_logger.wtf("key " + key +
-                            " couldn't be found, returning default value " +
-                            default + " instead")
+            LOGGER.wtf("key " + key +
+                       " couldn't be found, returning default value " +
+                       default + " instead")
             return default
 
-    def printConfig(self):
+    def print_config(self):
+        """
+        prints the actual config
+        return: None
+        """
         for key in self.config:
             print(key + " : " + self.config[key])
 

@@ -1,8 +1,8 @@
 import argparse
 
-from Fuzzix.Data import Host, URL, Settings, Dir, Wordlist
-from Fuzzix.Util import WebApi, Content_Worker, Content, TERMINATE_WORKER
-from Fuzzix import Logger, print_banner
+from fuzzix.data import Host, URL, Settings, Dir, Wordlist
+from fuzzix.util import WebApi, ContentWorker, Content, TERMINATE_WORKER
+from fuzzix import LOGGER, print_banner
 
 
 class UrlFuzzer:
@@ -26,18 +26,14 @@ class UrlFuzzer:
         reads the path of the wordlists out of the Settings and reads the wordlists into memory
         return: None
         """
-        self.directories_wordlist = Wordlist("directories",
-                                             Settings.readAttribute(
-                                                 "WORDLISTS/directories", ""))
-        self.extensions_wordlist = Wordlist("extension",
-                                            Settings.readAttribute(
-                                                "WORDLISTS/extensions", ""))
-        self.files_wordlist = Wordlist("files",
-                                       Settings.readAttribute(
-                                           "WORDLISTS/files", ""))
-        self.mutations_wordlist = Wordlist("mutations",
-                                           Settings.readAttribute(
-                                               "WORDLISTS/mutations", ""))
+        self.directories_wordlist = Wordlist(
+            "directories", Settings.readAttribute("WORDLISTS/directories", ""))
+        self.extensions_wordlist = Wordlist(
+            "extension", Settings.readAttribute("WORDLISTS/extensions", ""))
+        self.files_wordlist = Wordlist(
+            "files", Settings.readAttribute("WORDLISTS/files", ""))
+        self.mutations_wordlist = Wordlist(
+            "mutations", Settings.readAttribute("WORDLISTS/mutations", ""))
 
     @staticmethod
     def __spiderworker__(content):
@@ -74,7 +70,7 @@ class UrlFuzzer:
         spider-routine of the URL_Fuzzer
         return: None
         """
-        Logger.info("Spidering URL", self.host.getURL())
+        LOGGER.info("Spidering URL", self.host.getURL())
         toProceed = []  #buffer for open tasks
         doneURLs = []  #deadlock protection
 
@@ -88,17 +84,17 @@ class UrlFuzzer:
             #writing buffer in queue
             for a in range(0, len(toProceed)):
                 content = toProceed.pop()
-                Content_Worker.queue.put(content)
+                ContentWorker.queue.put(content)
 
             #waiting for workers to finish
-            Logger.info('Processing recursion', i,
-                        Content_Worker.queue.qsize(), 'task(s) to be done')
-            Content_Worker.queue.join()
+            LOGGER.info('Processing recursion', i, ContentWorker.queue.qsize(),
+                        'task(s) to be done')
+            ContentWorker.queue.join()
 
             #processing finished resulsts
-            while not Content_Worker.done.empty():
-                content = Content_Worker.done.get()
-                Content_Worker.done.task_done()
+            while not ContentWorker.done.empty():
+                content = ContentWorker.done.get()
+                ContentWorker.done.task_done()
 
                 if content.getContentType() != "linklist":
                     continue
@@ -118,7 +114,7 @@ class UrlFuzzer:
 
         #printing result
         print(self.host.getRootdir())
-        Logger.info("spidering completed")
+        LOGGER.info("spidering completed")
 
     @staticmethod
     def __fuzzworker__(content):
@@ -157,12 +153,12 @@ class UrlFuzzer:
         """
 
     def fuzz(self):
-        Logger.info("fuzzing URL", self.host.getURL())
+        LOGGER.info("fuzzing URL", self.host.getURL())
         recursion_depth = Settings.readAttribute("recursion_depth", 0)
         for i in range(0, recursion_depth):
-            Logger.info("Processing recursion", i)
+            LOGGER.info("Processing recursion", i)
 
-        Logger.info("fuzzing completed")
+        LOGGER.info("fuzzing completed")
 
 
 def startup():
@@ -238,12 +234,12 @@ def start_workers(amount=4):
     return: None
     """
 
-    Logger.info("Starting " + str(amount) + " threads")
-    for i in range(0, amount):
-        c = Content_Worker()
-        c.start()
-        Content_Worker.workers.append(c)
-    Logger.info("Threads started")
+    LOGGER.info("Starting " + str(amount) + " threads")
+    for _i in range(0, amount):
+        c_w = ContentWorker()
+        c_w.start()
+        ContentWorker.workers.append(c_w)
+    LOGGER.info("Threads started")
 
 
 def stop_workers():
@@ -252,13 +248,13 @@ def stop_workers():
     return: None
     """
 
-    Logger.info("stopping workers")
-    for _worker in Content_Worker.workers:
-        Content_Worker.queue.put(TERMINATE_WORKER)
-    for worker in Content_Worker.workers:
+    LOGGER.info("stopping workers")
+    for _worker in ContentWorker.workers:
+        ContentWorker.queue.put(TERMINATE_WORKER)
+    for worker in ContentWorker.workers:
         worker.join()
 
-    Logger.info("stopped workers")
+    LOGGER.info("stopped workers")
 
 
 def shutdown():
@@ -270,9 +266,9 @@ def shutdown():
     try:
         stop_workers()
     except:
-        Logger.error("failed to stop threads!")
+        LOGGER.error("failed to stop threads!")
 
-    Logger.info("finished scan")
+    LOGGER.info("finished scan")
     exit()
 
 
@@ -283,7 +279,7 @@ if __name__ == "__main__":
         startup()
         start_workers(Settings.readAttribute("threads", 0))
     except ValueError as e:
-        Logger.error(e)
+        LOGGER.error(e)
         exit()
 
     TARGET_HOST = Host(

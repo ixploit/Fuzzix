@@ -1,55 +1,31 @@
-import urllib3
-
-urllib3.disable_warnings()
-
+"""
+serves different functions for webcrawling
+"""
 import threading
 from queue import Queue
-from bs4 import BeautifulSoup
 
-from Fuzzix import Logger
-from Fuzzix.Data import URL, HTTP, Host, Dir, File
+import urllib3
+from bs4 import BeautifulSoup
+from fuzzix import LOGGER
+from fuzzix.data import URL, HTTP, Host, Dir, File
+urllib3.disable_warnings()
 
 
 class __WebApi__:
-
     def __init__(self, protoName):
 
         try:
             self.setProtocol(protoName)
             self.poolManager = urllib3.PoolManager()
 
-        except ValueError as e:
-            raise e
+        except ValueError as error:
+            raise error
 
     def setProtocol(self, protoName):
         try:
             self.proto = HTTP.getProtocol(protoName)
-        except ValueError as e:
-            raise e
-
-    def receiveContent(self, host, dir, file):
-        if type(dir) is not Dir:
-            raise ValueError('unsupported type for attribute dir')
-        if type(file) is not File:
-            raise ValueError('unsupported type for attribute file')
-        if type(host) is not Host:
-            raise ValueError('unsupported type for attribute host')
-
-        url = URL.buildURL(host.getURL().getProto(), host.getURL().getHost(), host.getURL().getPort(), dir.getName(),
-                           file.getName())
-        r = self.poolManager.request('GET', url)
-
-        content = Content(URL(url))
-        content.setStatus(r.status)
-        content.setContentType(r.getheaders()['Content-Type'])
-
-        #check filetype
-        if 'text' in r.getheaders()['Content-Type']:
-            content.setContent(str(BeautifulSoup(r.data, 'html.parser')))
-        else:
-            content.setContent(r.data)
-
-        return content
+        except ValueError as error:
+            raise error
 
     def receiveURL(self, url):
         if type(url) is not URL:
@@ -64,9 +40,9 @@ class __WebApi__:
         if 'text' in r.getheaders()['Content-Type']:
             content.setContent(str(BeautifulSoup(r.data, 'html.parser')))
         else:
-            content.setContent(r.data) 
+            content.setContent(r.data)
         return content
-        
+
     def grabRefs(self, content):
         """
         extracts most hyperlinks out of a given html document
@@ -129,13 +105,13 @@ class Content:
 
     def setContent(self, content):
         self.content = content
-    
-    def setContentType(self,contentType):
+
+    def setContentType(self, contentType):
         self.contentType = contentType
 
-    def setProcessor(self,processor):
+    def setProcessor(self, processor):
         self.processor = processor
-    
+
     def getProcessor(self):
         return self.processor
 
@@ -144,7 +120,8 @@ class Content:
 TERMINATE_WORKER = Content(URL("http://TERMINA.TE"))
 
 
-class Content_Worker(threading.Thread):
+class ContentWorker(threading.Thread):
+    """processes content attributes"""
     queue = Queue(maxsize=0)
     done = Queue(maxsize=0)
     workers = []
@@ -158,20 +135,20 @@ class Content_Worker(threading.Thread):
         return: None
         """
         while True:
-            content = Content_Worker.queue.get()
+            content = ContentWorker.queue.get()
 
             # stop when terminate signal received
             if content.getURL().getURL() == TERMINATE_WORKER.getURL().getURL():
-                Content_Worker.queue.task_done()
+                ContentWorker.queue.task_done()
                 return
 
             try:
                 func = content.getProcessor()
                 content = WebApi.receiveURL(content.getURL())
                 newContent = func(content)
-                Content_Worker.done.put(newContent)
-            except BaseException as e:
-                Logger.error('catched exception ',e,'in child-thread')
+                ContentWorker.done.put(newContent)
+            except BaseException as error:
+                LOGGER.error('catched exception ', error, 'in child-thread')
             except:
-                Logger.error("fatal error in childthread")
-            Content_Worker.queue.task_done()
+                LOGGER.error("fatal error in childthread")
+            ContentWorker.queue.task_done()

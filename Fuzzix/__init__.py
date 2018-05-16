@@ -3,7 +3,7 @@ providing high-level functions for Fuzzix.py
 """
 
 from coloredlogger import ColoredLogger
-Logger = ColoredLogger(name="MAIN")
+LOGGER = ColoredLogger(name="MAIN")
 
 
 def print_banner():
@@ -24,5 +24,4 @@ def print_banner():
 
  by @cybertschunk   cybertschunk@mailbox.org
  """
-    print(banner)                                                     
-
+    print(banner)
